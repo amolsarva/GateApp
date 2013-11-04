@@ -4,8 +4,13 @@
 
 package com.bobboau.GateApp;
 
+import gate.util.Files;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 
@@ -100,6 +105,22 @@ public class GateApp
 	public Iterable<File> getCorpus()
 	{
 		return this.TEMPORARY_FILE_LIST;
+	}
+	
+	/**
+	 * @param file
+	 * @return string, contents of file
+	 */
+	public String getDocumentContent(File file){
+		return "contents of "+file.getName()+" here";
+	}
+	
+	/**
+	 * @param file
+	 * @return string, contents of file
+	 */
+	public String getDocumentSubject(File file){
+		return "Cool NLP stuff about "+file.getName();
 	}
 
 } // class GateApp

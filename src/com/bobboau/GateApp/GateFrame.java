@@ -23,8 +23,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.plaf.SplitPaneUI;
 
 import com.bobboau.GateApp.GateApp.GateAppListener;
 
@@ -32,7 +37,7 @@ import com.bobboau.GateApp.GateApp.GateAppListener;
  * @author Bobboau
  *
  */
-@SuppressWarnings({ "nls", "serial" })
+@SuppressWarnings("serial")
 public class GateFrame extends JFrame implements GateAppListener
 {
 	/**
@@ -48,7 +53,7 @@ public class GateFrame extends JFrame implements GateAppListener
 	/**
 	 * a list widget that shows all of the files loaded
 	 */
-	JList<String> document_list = new JList<String>();
+	JList<File> document_list = new JList<File>();
 	
 	/**
 	 * the output, where all the thread content gets displayed
@@ -105,23 +110,93 @@ public class GateFrame extends JFrame implements GateAppListener
 		setSize(500, 700);
 		setTitle("GateApp");
 		
+		this.document_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		
+		this.thread_output.setEditable(false);
+		this.nlp_output.setEditable(false);
+		
 		//make a few scrolling containers for a few elements
 		JScrollPane thread_output_holder = new JScrollPane(this.thread_output, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		JScrollPane document_list_holder = new JScrollPane(this.document_list, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		//this will hold the elements on the right side of the UI
-		JPanel right_elements = new JPanel();
+		final JSplitPane right_elements = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 
 		//set up the layout for the right
-		right_elements.setLayout(new BoxLayout(right_elements, BoxLayout.Y_AXIS));
 		right_elements.add(this.nlp_output);
 		right_elements.add(thread_output_holder);
 
 		//now set up the main layout using the right layout
-		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.X_AXIS));
-		add(document_list_holder);
-		add(right_elements);
+		JSplitPane contents = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		contents.add(document_list_holder);
+		contents.add(right_elements);
+		add(contents);
+		
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				right_elements.setDividerLocation(0.5);
+			}
+		});
+		
+		this.document_list.addListSelectionListener(new ListSelectionListener(){
+
+			@Override
+			public void valueChanged(ListSelectionEvent event)
+			{
+				onDocumentChanged(GateFrame.this.document_list.getSelectedValue());
+			}
+			
+		});
 	}
+	
+	protected void onDocumentChanged(File document)
+	{
+		this.thread_output.setText(this.the_app.getDocumentContent(document));
+		this.nlp_output.setText(this.the_app.getDocumentSubject(document));
+	}
+
+	/**
+	 * the load menu option was selected
+	 */
+	public void onLoadCorpus()
+	{
+		JFileChooser chooser = new JFileChooser();
+		chooser.setCurrentDirectory(this.config.get("corpus_directory", new File (".")));
+		chooser.setMultiSelectionEnabled(true);
+		if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+		{
+			this.config.set("corpus_directory", chooser.getCurrentDirectory());
+			this.the_app.setCorpus(new ArrayList<File>(Arrays.asList(chooser.getSelectedFiles())));
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public void onCorpusLoaded(GateApp app, Iterable<File> files) {
+		ArrayList<File> list_data = new ArrayList<File>();
+		for(File file : files){
+			//add the file, but overload it so that the toString function displays what we want
+			list_data.add(new File(file.getPath()){
+				public String toString(){
+					return this.getName();
+				}
+			});
+		}
+		this.document_list.setListData(list_data.toArray(new File[0]));
+		this.document_list.setVisible(false);
+		this.document_list.setVisible(true);
+	}
+	
+	/*
+	 /-------------------------------\
+	 | Never Ending Menu Boilerplate |
+	 \-------------------------------/
+	 */
 	
 	private void setupMenu()
 	{
@@ -158,35 +233,5 @@ public class GateFrame extends JFrame implements GateAppListener
 		menu_item.setToolTipText(description);
 		menu_item.addActionListener(action);
 		menu.add(menu_item);
-	}
-	
-	/**
-	 * the load menu option was selected
-	 */
-	public void onLoadCorpus()
-	{
-		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(this.config.get("corpus_directory", new File (".")));
-		chooser.setMultiSelectionEnabled(true);
-		if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-		{
-			this.config.set("corpus_directory", chooser.getCurrentDirectory());
-			this.the_app.setCorpus(new ArrayList<File>(Arrays.asList(chooser.getSelectedFiles())));
-		}
-	}
-	
-	/**
-	 * 
-	 */
-	@SuppressWarnings("unused")
-	@Override
-	public void onCorpusLoaded(GateApp app, Iterable<File> files) {
-		ArrayList<String> list_data = new ArrayList<String>();
-		for(File file : files){
-			list_data.add(file.getName());
-		}
-		this.document_list.setListData(list_data.toArray(new String[0]));
-		this.document_list.setVisible(false);
-		this.document_list.setVisible(true);
 	}
 }
