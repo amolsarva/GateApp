@@ -1,0 +1,12 @@
+<!-- creole.xml GateApp -->
+<!--  Bobboau, 27/10/2013 -->
+
+<!--
+This file just references the JAR file that contains the compiled resource.
+Configuration is contained in the @CreoleResource annotation on 
+com.bobboau.GateApp.GateApp.
+-->
+
+<CREOLE-DIRECTORY>
+  <JAR SCAN="true">GateApp.jar</JAR>
+</CREOLE-DIRECTORY>
