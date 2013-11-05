@@ -4,6 +4,8 @@
 package com.bobboau.GateApp;
 
 
+import gate.util.GateException;
+
 import java.awt.EventQueue;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -13,7 +15,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import javax.swing.BoxLayout;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -21,7 +22,6 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
@@ -29,7 +29,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.SplitPaneUI;
 
 import com.bobboau.GateApp.GateApp.GateAppListener;
 
@@ -74,19 +73,23 @@ public class GateFrame extends JFrame implements GateAppListener
 	{
 		EventQueue.invokeLater(new Runnable()
 		{
-			@SuppressWarnings("unused")
 			@Override
 			public void run()
 			{
-				new GateFrame();
+				try {
+					new GateFrame();
+				} catch (HeadlessException | GateException e) {
+					e.printStackTrace();
+				}
 			}
 		});
 	}
 
 	/**
 	 * @throws HeadlessException
+	 * @throws GateException 
 	 */
-	public GateFrame() throws HeadlessException
+	public GateFrame() throws HeadlessException, GateException
 	{
 		super();
 		

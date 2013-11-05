@@ -4,16 +4,16 @@
 
 package com.bobboau.GateApp;
 
-import gate.util.Files;
+
+import gate.Gate;
+import gate.corpora.CorpusImpl;
+import gate.corpora.DocumentImpl;
+import gate.util.GateException;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
+import java.net.MalformedURLException;
 import java.util.*;
-
-
 
 /**
  * @author Bobboau
@@ -35,6 +35,9 @@ public class GateApp
 		void onCorpusLoaded(GateApp app, Iterable<File> files);
 	}
 	
+	/**
+	 * things that are listening to our events
+	 */
 	private List<GateAppListener> listeners = new ArrayList<GateAppListener>();
 	
 	/**
@@ -48,9 +51,15 @@ public class GateApp
 	private Iterable<File> TEMPORARY_FILE_LIST = new ArrayList<File>();
 	
 	/**
-	 * constructor, starts up the Gate application
+	 * set of documents we are working on
 	 */
-	public GateApp()
+	private CorpusImpl corpus = null;
+	
+	/**
+	 * constructor, starts up the Gate application
+	 * @throws GateException 
+	 */
+	public GateApp() throws GateException
 	{
 		construct();
 	}
@@ -58,8 +67,9 @@ public class GateApp
 	/**
 	 * constructor, starts up the Gate application
 	 * @param listener 
+	 * @throws GateException 
 	 */
-	public GateApp(GateAppListener listener)
+	public GateApp(GateAppListener listener) throws GateException
 	{
 		addListener(listener);
 		construct();
@@ -67,8 +77,11 @@ public class GateApp
 	
 	/**
 	 * construction common code
+	 * @throws GateException 
 	 */
-	private void construct(){
+	private void construct() throws GateException{
+		Gate.init();
+		corpus = new CorpusImpl();
 		this.config = Config.load("GateApp.conf"); //load the application configuration settings	
 		setCorpus(this.config.get("loaded_files", new ArrayList<File>()));//load up what ever corpus we had last time, default to nothing
 	}
@@ -89,6 +102,17 @@ public class GateApp
 	public <S extends Serializable & Iterable<File>> 
 	void setCorpus(S files)
 	{
+		for(File file : files)
+		{
+			try {
+				DocumentImpl document = new DocumentImpl();
+				document.setSourceUrl(file.toURI().toURL());
+				corpus.add(document);
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		this.TEMPORARY_FILE_LIST = files;
 		//TODO: load up a corpus with the listed files
 		
