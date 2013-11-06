@@ -4,16 +4,16 @@
 package com.bobboau.GateApp;
 
 
-import gate.util.GateException;
-
 import java.awt.EventQueue;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
@@ -22,48 +22,58 @@ import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.ProgressMonitor;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import com.bobboau.GateApp.GateApp.GateAppListener;
-
 /**
  * @author Bobboau
- *
+ *this is the UI for the Gate application
  */
-@SuppressWarnings("serial")
-public class GateFrame extends JFrame implements GateAppListener
+@SuppressWarnings({"serial", "synthetic-access"})
+public class GateFrame extends JFrame implements GateAppType.GateAppListener
 {
 	/**
 	 * key/value pair configuration object
 	 */
-	Config config;
+	private Config config;
 	
 	/**
 	 * the application object, where most of the 'fun' happens
 	 */
-	GateApp the_app = null;
+	private GateAppType the_app = null;
 	
 	/**
 	 * a list widget that shows all of the files loaded
 	 */
-	JList<File> document_list = new JList<File>();
+	private JList<File> document_list = new JList<File>();
 	
 	/**
 	 * the output, where all the thread content gets displayed
 	 */
-	JEditorPane thread_output = new JEditorPane();
+	private JEditorPane thread_output = new JEditorPane();
 	
 	/**
 	 * the output, where all the nlp content gets displayed
 	 * this is the thing that shows the stuff that our grade will be determined by
 	 */
-	JEditorPane nlp_output = new JEditorPane();
+	private JEditorPane nlp_output = new JEditorPane();
+	
+	/**
+	 * progress display for when we are loading files
+	 */
+	private ProgressMonitor progress = null;
+	
+	/**
+	 * the above apparently is deficient in it's ability to track progress so we have to do it for it
+	 */
+	int progress_amount = 0;
 
 	/**
 	 * run the application
@@ -73,23 +83,34 @@ public class GateFrame extends JFrame implements GateAppListener
 	{
 		EventQueue.invokeLater(new Runnable()
 		{
+			@SuppressWarnings("unused")
 			@Override
 			public void run()
 			{
 				try {
 					new GateFrame();
-				} catch (HeadlessException | GateException e) {
+				} catch (HeadlessException e) {
 					e.printStackTrace();
+					System.exit(ABORT);
 				}
 			}
 		});
 	}
 
 	/**
-	 * @throws HeadlessException
-	 * @throws GateException 
+	 * 
 	 */
-	public GateFrame() throws HeadlessException, GateException
+	@Override
+	public void onGateFailed()
+	{
+		System.exit(1);
+	}
+
+	/**
+	 * constructor for the Gate application UI
+	 * @throws HeadlessException
+	 */
+	public GateFrame() throws HeadlessException
 	{
 		super();
 		
@@ -98,8 +119,7 @@ public class GateFrame extends JFrame implements GateAppListener
 		setupWidgets();
 		setupMenu();
 		
-		//UI is done, now make the app
-		this.the_app = new GateApp(this);
+		this.the_app = new ThreadedGateApp(this);
 	}
 
 	/**
@@ -145,44 +165,133 @@ public class GateFrame extends JFrame implements GateAppListener
 		});
 		
 		this.document_list.addListSelectionListener(new ListSelectionListener(){
-
 			@Override
 			public void valueChanged(ListSelectionEvent event)
 			{
-				onDocumentChanged(GateFrame.this.document_list.getSelectedValue());
+				GateFrame.this.onSelectedDocumentChanged(GateFrame.this.document_list.getSelectedIndex());
 			}
-			
 		});
+		
+		this.setEnabled(false);//start out disabled because gate needs to init first
+	}
+
+
+	/**
+	 * the gate app has finished setting it's self up
+	 */
+	@Override
+	public void onGateInit()
+	{
+		this.setEnabled(true);
 	}
 	
-	protected void onDocumentChanged(File document)
+	/**
+	 * what to do when the selected document changes
+	 * @param document
+	 */
+	private void onSelectedDocumentChanged(int document)
 	{
-		this.thread_output.setText(this.the_app.getDocumentContent(document));
-		this.nlp_output.setText(this.the_app.getDocumentSubject(document));
+		this.the_app.getDocumentContent(document, new GateAppType.ResultRetriever(){
+			@Override
+			public void string(final String value)
+			{
+				EventQueue.invokeLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						GateFrame.this.thread_output.setText(value);
+					}
+				});
+			}
+		});
+		this.the_app.getDocumentSubject(document, new GateAppType.ResultRetriever(){
+			@Override
+			public void string(final String value)
+			{
+				EventQueue.invokeLater(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						GateFrame.this.nlp_output.setText(value);
+					}
+				});
+			}
+		});
 	}
 
 	/**
 	 * the load menu option was selected
 	 */
-	public void onLoadCorpus()
+	private void onLoadCorpus()
 	{
 		JFileChooser chooser = new JFileChooser();
-		chooser.setCurrentDirectory(this.config.get("corpus_directory", new File (".")));
+		
+		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setMultiSelectionEnabled(true);
+		
+		chooser.setCurrentDirectory(this.config.get("corpus_directory", new File (".")));
+		
 		if(chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
 		{
 			this.config.set("corpus_directory", chooser.getCurrentDirectory());
-			this.the_app.setCorpus(new ArrayList<File>(Arrays.asList(chooser.getSelectedFiles())));
+			try
+			{
+				URL url = chooser.getSelectedFile().toURI().toURL();
+				this.the_app.setCorpus(url);
+			}
+			catch (MalformedURLException e)
+			{
+				e.printStackTrace();
+			}
+			
 		}
+	}
+
+	/**
+	 * called when a corpus has started to load
+	 */
+	@Override
+	public void onCorpusLoadStart(final int document_count)
+	{
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				GateFrame.this.progress_amount = 0;
+				GateFrame.this.progress = new ProgressMonitor(GateFrame.this, "Loading...", "", 0, document_count);
+				GateFrame.this.setEnabled(false);
+			}
+		});
 	}
 	
 	/**
-	 * 
+	 * called when a corpus has finished loading one file
 	 */
 	@Override
-	public void onCorpusLoaded(GateApp app, Iterable<File> files) {
+	public void onCorpusDocumentLoaded()
+	{
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				GateFrame.this.progress_amount++;
+				GateFrame.this.progress.setProgress(GateFrame.this.progress_amount);
+				GateFrame.this.setEnabled(true);
+			}
+		});
+	}
+	
+	/**
+	 * a corpus has been loaded in the gate application
+	 */
+	@Override
+	public void onCorpusLoadComplete(List<URL> files) {
 		ArrayList<File> list_data = new ArrayList<File>();
-		for(File file : files){
+		for(URL file : files){
 			//add the file, but overload it so that the toString function displays what we want
 			list_data.add(new File(file.getPath()){
 				public String toString(){
@@ -193,6 +302,18 @@ public class GateFrame extends JFrame implements GateAppListener
 		this.document_list.setListData(list_data.toArray(new File[0]));
 		this.document_list.setVisible(false);
 		this.document_list.setVisible(true);
+		this.progress.close();
+		this.progress = null;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public void onCorpusLoadFailed()
+	{
+		JOptionPane.showMessageDialog(null,"Could not open files in directory ");
+		this.setEnabled(true);
 	}
 	
 	/*
@@ -201,6 +322,9 @@ public class GateFrame extends JFrame implements GateAppListener
 	 \-------------------------------/
 	 */
 	
+	/**
+	 * main function for setting up all menu options, this focuses on top level
+	 */
 	private void setupMenu()
 	{
 		JMenuBar menu_bar = new JMenuBar();
@@ -210,6 +334,10 @@ public class GateFrame extends JFrame implements GateAppListener
 		setJMenuBar(menu_bar);
 	}
 	
+	/**
+	 * function for setting up the options in the file menu
+	 * @param menu_bar
+	 */
 	private void setupFileMenu(JMenuBar menu_bar)
 	{
 		JMenu menu = new JMenu("File");

@@ -5,50 +5,35 @@
 package com.bobboau.GateApp;
 
 
+import gate.Document;
 import gate.Gate;
 import gate.corpora.CorpusImpl;
-import gate.corpora.DocumentImpl;
+import gate.creole.ResourceInstantiationException;
+import gate.event.CreoleEvent;
 import gate.util.GateException;
 
 import java.io.File;
-import java.io.Serializable;
-import java.net.MalformedURLException;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.net.URL;
 import java.util.*;
+
 
 /**
  * @author Bobboau
  *
  */
-public class GateApp
-{
-	/**
-	 * @author Bobboau
-	 * a bunch of callbacks that some external object can get feedback from
-	 */
-	public interface GateAppListener
-	{
-		/**
-		 * called when a new corpus has finished loading
-		 * @param app 
-		 * @param files 
-		 */
-		void onCorpusLoaded(GateApp app, Iterable<File> files);
-	}
-	
+public class GateApp implements GateAppType
+{	
 	/**
 	 * things that are listening to our events
 	 */
-	private List<GateAppListener> listeners = new ArrayList<GateAppListener>();
+	private List<GateAppType.GateAppListener> listeners = new ArrayList<GateAppType.GateAppListener>();
 	
 	/**
 	 * key/value pair configuration object
 	 */
 	private Config config;
-	
-	/**
-	 * this should be replaced with CorpusImpl or something similar ASAP this is stub functionality
-	 */
-	private Iterable<File> TEMPORARY_FILE_LIST = new ArrayList<File>();
 	
 	/**
 	 * set of documents we are working on
@@ -57,19 +42,16 @@ public class GateApp
 	
 	/**
 	 * constructor, starts up the Gate application
-	 * @throws GateException 
 	 */
-	public GateApp() throws GateException
+	public GateApp()
 	{
 		construct();
 	}
 	
 	/**
 	 * constructor, starts up the Gate application
-	 * @param listener 
-	 * @throws GateException 
-	 */
-	public GateApp(GateAppListener listener) throws GateException
+	 * @param listener	 */
+	public GateApp(GateAppListener listener)
 	{
 		addListener(listener);
 		construct();
@@ -79,16 +61,47 @@ public class GateApp
 	 * construction common code
 	 * @throws GateException 
 	 */
-	private void construct() throws GateException{
-		Gate.init();
-		corpus = new CorpusImpl();
-		this.config = Config.load("GateApp.conf"); //load the application configuration settings	
-		setCorpus(this.config.get("loaded_files", new ArrayList<File>()));//load up what ever corpus we had last time, default to nothing
+	protected void construct()
+	{
+		
+		try
+		{
+			Gate.init();
+			this.corpus = new CorpusImpl(){
+				public void resourceLoaded(CreoleEvent e){
+					super.resourceLoaded(e);
+					GateApp.this.documentLoaded();
+				}
+			};
+			this.config = Config.load("GateApp.conf"); //load the application configuration settings
+			
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onGateInit();
+			}
+			
+			//load up what ever corpus we had last time, default to nothing
+			setCorpus(new URL(this.config.get("loaded_files", "")));
+		}
+		catch (IOException e)
+		{
+			//if it fails just log it, don't worry about it too much
+			e.printStackTrace();
+		}
+		catch (GateException e1)
+		{
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onGateFailed();
+			}
+
+		}
 	}
 	
 	/**
 	 * @param gate_listener
 	 */
+	@Override
 	public void addListener(GateAppListener gate_listener)
 	{
 		this.listeners.add(gate_listener);
@@ -96,55 +109,86 @@ public class GateApp
 	
 	/**
 	 * loads up a list of files
-	 * @param <S> 
-	 * @param files
+	 * @param document_directory
 	 */
-	public <S extends Serializable & Iterable<File>> 
-	void setCorpus(S files)
+	@Override
+	public void setCorpus(URL document_directory)
 	{
-		for(File file : files)
-		{
-			try {
-				DocumentImpl document = new DocumentImpl();
-				document.setSourceUrl(file.toURI().toURL());
-				corpus.add(document);
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		FileFilter filter = new FileFilter(){
+			@Override
+			public boolean accept(File file)
+			{
+				return file.getName().endsWith(".pdf");
 			}
-		}
-		this.TEMPORARY_FILE_LIST = files;
-		//TODO: load up a corpus with the listed files
+		};
 		
-		this.config.set("loaded_files", files);
+		int file_count = new File(document_directory.getFile()).listFiles(filter).length;
+		
 		for(GateAppListener gate_listener : this.listeners)
 		{
-			gate_listener.onCorpusLoaded(this, getCorpus());
+			gate_listener.onCorpusLoadStart(file_count);
+		}
+		
+		try
+		{
+			this.corpus.populate(
+				document_directory, 
+				filter,
+				"UTF-8",
+				false
+			);
+		}
+		catch (ResourceInstantiationException | IOException e)
+		{
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onCorpusLoadFailed();
+			}
+		}
+		
+		this.config.set("loaded_files", document_directory.toString());
+		for(GateAppListener gate_listener : this.listeners)
+		{
+			gate_listener.onCorpusLoadComplete(getCorpus());
+		}
+	}
+	
+	/**
+	 * called whenever a corpus loads a document
+	 */
+	public void documentLoaded(){
+		for(GateAppListener gate_listener : this.listeners)
+		{
+			gate_listener.onCorpusDocumentLoaded();
 		}
 	}
 	
 	/**
 	 * @return list of files loaded into the corpus
 	 */
-	public Iterable<File> getCorpus()
+	private List<URL> getCorpus()
 	{
-		return this.TEMPORARY_FILE_LIST;
+		ArrayList<URL> file_list = new ArrayList<URL>();
+		for(Document document : this.corpus){
+			file_list.add(document.getSourceUrl());
+		}
+		return file_list;
 	}
 	
 	/**
-	 * @param file
-	 * @return string, contents of file
+	 * @param idx
 	 */
-	public String getDocumentContent(File file){
-		return "contents of "+file.getName()+" here";
+	@Override
+	public void getDocumentContent(int idx, ResultRetriever results){
+		results.string(this.corpus.get(idx).getContent().toString());
 	}
 	
 	/**
-	 * @param file
-	 * @return string, contents of file
+	 * @param idx
 	 */
-	public String getDocumentSubject(File file){
-		return "Cool NLP stuff about "+file.getName();
+	@Override
+	public void getDocumentSubject(int idx, ResultRetriever results){
+		results.string("Cool NLP stuff about "+this.corpus.get(idx).getName()+" goes here.");
 	}
 
 } // class GateApp
