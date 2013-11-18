@@ -5,16 +5,23 @@
 package com.bobboau.GateApp;
 
 
+import gate.AnnotationSet;
+import gate.CorpusController;
 import gate.Document;
+import gate.Factory;
 import gate.Gate;
 import gate.corpora.CorpusImpl;
+import gate.creole.ANNIEConstants;
+import gate.creole.ExecutionException;
 import gate.creole.ResourceInstantiationException;
+import gate.creole.SerialAnalyserController;
 import gate.event.CreoleEvent;
 import gate.util.GateException;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 
@@ -39,6 +46,11 @@ public class GateApp implements GateAppType
 	 * set of documents we are working on
 	 */
 	private CorpusImpl corpus = null;
+	
+	/**
+	 * the processing pipeline
+	 */
+	SerialAnalyserController pipeline = null;
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -67,6 +79,16 @@ public class GateApp implements GateAppType
 		try
 		{
 			Gate.init();
+			Gate.getCreoleRegister().registerDirectories( new File(System.getProperty("user.dir")).toURI().toURL() );
+			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), ANNIEConstants.PLUGIN_DIR).toURI().toURL());
+			
+			this.pipeline = (SerialAnalyserController)Factory.createResource("gate.creole.SerialAnalyserController");
+			
+			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.annotdelete.AnnotationDeletePR"));
+			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.tokeniser.DefaultTokeniser"));
+			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.splitter.SentenceSplitter"));
+			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer"));
+			
 			this.corpus = new CorpusImpl(){
 				public void resourceLoaded(CreoleEvent e){
 					super.resourceLoaded(e);
@@ -147,9 +169,22 @@ public class GateApp implements GateAppType
 		}
 		
 		this.config.set("loaded_files", document_directory.toString());
-		for(GateAppListener gate_listener : this.listeners)
+		
+		this.pipeline.setCorpus(this.corpus);
+		try
 		{
-			gate_listener.onCorpusLoadComplete(getCorpus());
+			this.pipeline.execute();
+		}
+		catch (ExecutionException e)
+		{
+			e.printStackTrace();
+		}
+		finally
+		{
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onCorpusLoadComplete(getCorpus());
+			}
 		}
 	}
 	
@@ -188,7 +223,17 @@ public class GateApp implements GateAppType
 	 */
 	@Override
 	public void getDocumentSubject(int idx, ResultRetriever results){
-		results.string("Cool NLP stuff about "+this.corpus.get(idx).getName()+" goes here.");
+		
+		Map<String,AnnotationSet> annotations = this.corpus.get(idx).getNamedAnnotationSets();
+		
+		Iterator<String> annotation_keys = annotations.keySet().iterator();
+		
+		String result = this.corpus.get(idx).getName()+" has: ";
+		while(annotation_keys.hasNext()){
+			result += annotation_keys.next();
+		}
+		
+		results.string(result);
 	}
 
 } // class GateApp
