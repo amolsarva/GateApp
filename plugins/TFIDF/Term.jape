@@ -6,4 +6,4 @@ Rule: simple_terms
 ({Token})  
 :new_term  
 -->  
-:new_term.Term = {rule = "simple_terms"}
+:new_term.Term = {string = :new_term.Token.string}

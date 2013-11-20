@@ -5,6 +5,7 @@
 package com.bobboau.GateApp;
 
 
+import gate.Annotation;
 import gate.AnnotationSet;
 import gate.CorpusController;
 import gate.Document;
@@ -219,8 +220,8 @@ public class GateApp implements GateAppType
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
 		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-				
-		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms";
+		Annotation first = annotations.iterator().next();
+		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \nFirst one is "+first.getFeatures().get("string");
 		
 		results.string(result);
 	}
