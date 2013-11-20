@@ -50,7 +50,7 @@ public class GateApp implements GateAppType
 	/**
 	 * the processing pipeline
 	 */
-	SerialAnalyserController pipeline = null;
+	Pipeline base_pipeline = null;
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -79,15 +79,10 @@ public class GateApp implements GateAppType
 		try
 		{
 			Gate.init();
-			Gate.getCreoleRegister().registerDirectories( new File(System.getProperty("user.dir")).toURI().toURL() );
+			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir")).toURI().toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), ANNIEConstants.PLUGIN_DIR).toURI().toURL());
 			
-			this.pipeline = (SerialAnalyserController)Factory.createResource("gate.creole.SerialAnalyserController");
-			
-			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.annotdelete.AnnotationDeletePR"));
-			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.tokeniser.DefaultTokeniser"));
-			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.splitter.SentenceSplitter"));
-			this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer"));
+			this.base_pipeline = new AnniePipeline();
 			
 			this.corpus = new CorpusImpl(){
 				public void resourceLoaded(CreoleEvent e){
@@ -114,7 +109,7 @@ public class GateApp implements GateAppType
 		{
 			for(GateAppListener gate_listener : this.listeners)
 			{
-				gate_listener.onGateFailed();
+				gate_listener.onGateFailed(e1);
 			}
 
 		}
@@ -170,10 +165,9 @@ public class GateApp implements GateAppType
 		
 		this.config.set("loaded_files", document_directory.toString());
 		
-		this.pipeline.setCorpus(this.corpus);
 		try
 		{
-			this.pipeline.execute();
+			this.base_pipeline.execute(this.corpus);
 		}
 		catch (ExecutionException e)
 		{
@@ -224,14 +218,9 @@ public class GateApp implements GateAppType
 	@Override
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
-		Map<String,AnnotationSet> annotations = this.corpus.get(idx).getNamedAnnotationSets();
-		
-		Iterator<String> annotation_keys = annotations.keySet().iterator();
-		
-		String result = this.corpus.get(idx).getName()+" has: ";
-		while(annotation_keys.hasNext()){
-			result += annotation_keys.next();
-		}
+		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
+				
+		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms";
 		
 		results.string(result);
 	}

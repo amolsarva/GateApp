@@ -1,0 +1,9 @@
+Phase: Terms  
+Input: Token  
+Options: control = appelt
+ 
+Rule: simple_terms  
+({Token})  
+:new_term  
+-->  
+:new_term.Term = {rule = "simple_terms"}

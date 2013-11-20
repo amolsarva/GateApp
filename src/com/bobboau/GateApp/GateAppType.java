@@ -1,4 +1,6 @@
 package com.bobboau.GateApp;
+import gate.util.GateException;
+
 import java.net.URL;
 import java.util.List;
 
@@ -19,8 +21,9 @@ public interface GateAppType
 	{
 		/**
 		 * called when gate has irrecoverably failed
+		 * @param e1 
 		 */
-		void onGateFailed();
+		void onGateFailed(GateException e1);
 		
 		/**
 		 * called when the gate app has finished setting up

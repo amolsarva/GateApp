@@ -4,6 +4,8 @@
 package com.bobboau.GateApp;
 
 
+import gate.util.GateException;
+
 import java.awt.EventQueue;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -101,8 +103,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * 
 	 */
 	@Override
-	public void onGateFailed()
+	public void onGateFailed(GateException e1)
 	{
+		JOptionPane.showMessageDialog(null, e1.getLocalizedMessage());
 		System.exit(1);
 	}
 
