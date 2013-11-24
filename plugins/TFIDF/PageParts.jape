@@ -1,0 +1,18 @@
+Phase: PageParts
+Input: Token SpaceToken Date
+Options: control = appelt
+
+
+Rule: page_break
+(
+	{SpaceToken.kind==control}
+	{Date}{SpaceToken}
+	{Token.string == "Gmail"}{SpaceToken}{Token.string == "-"}{SpaceToken}
+	({Token}|{SpaceToken.kind!=control})*
+	{SpaceToken.kind==control}
+	{Token.string == "https"}({Token}|{SpaceToken.kind!=control})+
+	{SpaceToken.kind==control}
+):break
+-->
+:break.Break = { rule = "page_break" }
+

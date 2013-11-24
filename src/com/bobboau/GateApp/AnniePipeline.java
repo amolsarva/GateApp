@@ -27,16 +27,28 @@ public class AnniePipeline implements Pipeline {
 	/**
 	 * constructor
 	 * @throws ResourceInstantiationException 
+	 * @throws MalformedURLException 
 	 */
 	public AnniePipeline() throws ResourceInstantiationException, MalformedURLException {
 		this.pipeline = (SerialAnalyserController)Factory.createResource("gate.creole.SerialAnalyserController");
 		
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.annotdelete.AnnotationDeletePR"));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.tokeniser.DefaultTokeniser"));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer",
+				gate.Utils.featureMap("listsURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/tfidf.def").toURI().toURL(),"encoding", "UTF-8")));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.splitter.SentenceSplitter"));
-		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer"));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
-							gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Term.jape").toURI().toURL(),"encoding", "UTF-8")));
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Parts.jape").toURI().toURL(),"encoding", "UTF-8")));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/PageParts.jape").toURI().toURL(),"encoding", "UTF-8")));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/EmailPart.jape").toURI().toURL(),"encoding", "UTF-8")));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Page.jape").toURI().toURL(),"encoding", "UTF-8")));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Body.jape").toURI().toURL(),"encoding", "UTF-8")));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
+				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Term.jape").toURI().toURL(),"encoding", "UTF-8")));
 	}
 
 	/**

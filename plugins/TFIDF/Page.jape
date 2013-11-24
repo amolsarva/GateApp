@@ -1,0 +1,82 @@
+Phase: Page  
+Input: Token SpaceToken Date Break NamedEmail
+Options: control = appelt
+
+
+Rule: thread_header
+(
+	{Token.string == "Print"}
+	{Break}
+	{NamedEmail}
+	{SpaceToken.kind==control}
+	({SpaceToken.kind!=control}|{Token})+
+	{SpaceToken.kind==control}
+	{Token.kind == number}({SpaceToken.kind!=control})+{Token.string == "messages"}
+):header
+-->
+:header.ThreadHeader = {rule = "thread_header"}
+
+
+Rule: message_header
+{SpaceToken.kind==control}
+(
+	{NamedEmail}
+	({Token}|{SpaceToken.kind!=control})+
+	({SpaceToken.kind==control}|{Break})
+
+	{Token.string == "To"}{Token.string == ":"}({SpaceToken.kind!=control})*
+	{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
+	
+	(
+		({SpaceToken.kind==control}|{Break})
+		{Token.string == "Cc"}{Token.string == ":"}({SpaceToken.kind!=control})*
+		{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
+	)?
+
+	
+	(
+		({SpaceToken.kind==control}|{Break})
+		{Token.string == "Bcc"}{Token.string == ":"}({SpaceToken.kind!=control})*
+		{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
+	)?
+):header
+-->
+:header.MessageHeader = {rule = "message_header"}
+
+
+Rule: quote_on_blah_wrote
+(
+	{Token.string == "On"}
+	({SpaceToken.kind!=control})+
+	{Date}
+	{Token.string == ","}
+	(
+		({SpaceToken.kind != control}|{Token.orth == upperInitial})+
+		|
+		{NamedEmail}
+	)
+	{Token.string == "wrote"}{Token.string == ":"}
+	({Token notWithin NamedEmail}|{SpaceToken notWithin NamedEmail})*
+	(
+		({Token notWithin NamedEmail}|{SpaceToken.kind != control, SpaceToken notWithin NamedEmail})
+		|
+		{SpaceToken.kind == control}
+	)
+):quote
+
+-->
+:quote.Quote = {rule = "quote_on_blah_wrote"}
+
+
+Rule: quote_hidden
+(
+	{Token.string == "["}
+	{Token.string == "Quoted"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "text"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "hidden"}
+	{Token.string == "]"}
+):quote
+-->
+:quote.Quote = {rule = "quote_hidden"}

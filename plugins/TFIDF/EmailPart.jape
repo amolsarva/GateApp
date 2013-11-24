@@ -1,0 +1,58 @@
+Phase: EmailPart  
+Input: Token SpaceToken Date Break
+Options: control = appelt
+
+
+Rule: named_email
+(
+	({Token.string == "\""}|{Token.kind == word, Token notWithin FileSize, Token notWithin Date})({Token.kind == word}|{Token.kind == number}|{Token.string == "."}|{Token.string == ","}|{Token.string == "\""}|{SpaceToken.kind != control})*
+	
+	{Token.string == "<"}
+	({Token.string != "@", Token.string != ">"})*
+	{Token.string == "@"}
+	({Token.string != ">"})* {Token.string == ">"}
+):address
+-->
+:address.NamedEmail = {rule = "named_email"}
+
+Rule: named_email_in_list
+{Token.string == ","}({SpaceToken.kind!=control})+
+(
+	({Token.string == "\""}|{Token.kind == word, Token notWithin FileSize, Token notWithin Date})({Token.kind == word}|{Token.kind == number}|{Token.string == "."}|{Token.string == ","}|{Token.string == "\""}|{SpaceToken.kind != control})*
+	(({SpaceToken}|{Break})({Token.kind == word}|{Token.string == "."}|{SpaceToken.kind != control})*)?
+	
+	{Token.string == "<"}
+	({Token.string != "@", Token.string != ">"})*
+	{Token.string == "@"}
+	({Token.string != ">"})* {Token.string == ">"}
+):address
+-->
+:address.NamedEmail = {rule = "named_email_in_list"}
+
+
+Rule: not_actually_named_email
+(
+	{Token.string == "\""}
+	{Token.kind == word}({Token.kind == word}|{Token.string == "."})*
+	{Token.string == "@"}
+	({Token.kind == word}|{Token.string == "."})+
+	{Token.string == "\""}
+	({SpaceToken.kind != control})*
+	
+	{Token.string == "<"}
+	({Token.string != "@", Token.string != ">"})*
+	{Token.string == "@"}
+	({Token.string != ">"})* {Token.string == ">"}
+):address
+-->
+:address.NamedEmail = {rule = "not_actually_named_email"}
+
+
+Rule: unnamed_email
+(
+	({Token.string != "@"})+
+	{Token.string == "@"}
+	{Token.string != "."} ({Token})* {Token.string == "."} ({Token})* {Token.kind == word}
+):address
+-->
+:address.NamedEmail = {rule = "unnamed_email"}

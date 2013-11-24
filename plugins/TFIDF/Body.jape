@@ -1,0 +1,14 @@
+Phase: Body
+Input: Token SpaceToken
+Options: control = appelt
+
+
+Rule: body
+(
+	{Token notWithin ThreadHeader,		Token notWithin MessageHeader,		Token notWithin Quote,		Token notWithin Break}
+	|
+	{SpaceToken notWithin ThreadHeader,	SpaceToken notWithin MessageHeader,	SpaceToken notWithin Quote,	SpaceToken notWithin Break}
+)+:body
+-->
+:body.Body = { rule = "body" }
+

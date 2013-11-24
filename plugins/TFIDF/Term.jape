@@ -3,7 +3,7 @@ Input: Token
 Options: control = appelt
  
 Rule: simple_terms  
-({Token})  
+({Token.kind == word, Token within Body, Token notWithin Boring})  
 :new_term  
 -->  
-:new_term.Term = {string = :new_term.Token.string}
+:new_term.Term = {rule = "simple_terms"}
