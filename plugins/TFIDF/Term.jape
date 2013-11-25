@@ -6,4 +6,4 @@ Rule: simple_terms
 ({Token.kind == word, Token within Body, Token notWithin Boring})  
 :new_term  
 -->  
-:new_term.Term = {rule = "simple_terms"}
+:new_term.Term = {rule = "simple_terms", string = :new_term.Token.string}
