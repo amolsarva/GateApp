@@ -76,6 +76,11 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * the above apparently is deficient in it's ability to track progress so we have to do it for it
 	 */
 	int progress_amount = 0;
+	
+	/**
+	 * how many documents have been processed
+	 */
+	int document_progress = 0;
 
 	/**
 	 * run the application
@@ -283,7 +288,6 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 			{
 				GateFrame.this.progress_amount++;
 				GateFrame.this.progress.setProgress(GateFrame.this.progress_amount);
-				GateFrame.this.setEnabled(true);
 			}
 		});
 	}
@@ -292,21 +296,29 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * a corpus has been loaded in the gate application
 	 */
 	@Override
-	public void onCorpusLoadComplete(List<URL> files) {
-		ArrayList<File> list_data = new ArrayList<File>();
-		for(URL file : files){
-			//add the file, but overload it so that the toString function displays what we want
-			list_data.add(new File(file.getPath()){
-				public String toString(){
-					return this.getName();
+	public void onCorpusLoadComplete(final List<URL> files) {
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				ArrayList<File> list_data = new ArrayList<File>();
+				for(URL file : files){
+					//add the file, but overload it so that the toString function displays what we want
+					list_data.add(new File(file.getPath()){
+						public String toString(){
+							return this.getName();
+						}
+					});
 				}
-			});
-		}
-		this.document_list.setListData(list_data.toArray(new File[0]));
-		this.document_list.setVisible(false);
-		this.document_list.setVisible(true);
-		this.progress.close();
-		this.progress = null;
+				GateFrame.this.setEnabled(true);
+				GateFrame.this.document_list.setListData(list_data.toArray(new File[0]));
+				GateFrame.this.document_list.setVisible(false);
+				GateFrame.this.document_list.setVisible(true);
+				GateFrame.this.progress.close();
+				GateFrame.this.progress = null;
+			}
+		});
 	}
 
 	/**
@@ -317,6 +329,53 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	{
 		JOptionPane.showMessageDialog(null,"Could not open files in directory ");
 		this.setEnabled(true);
+	}
+
+	@Override
+	public void onCorpusProcessStart() {
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				GateFrame.this.progress_amount = -1;
+				GateFrame.this.document_progress = 0;
+				GateFrame.this.progress = new ProgressMonitor(GateFrame.this, "Processing...", "", 0, 101);
+				
+				GateFrame.this.setEnabled(false);
+			}
+		});
+	}
+
+	@Override
+	public void onCorpusDocumentProcessed(final int progress) {
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				if(GateFrame.this.progress_amount > progress){
+					GateFrame.this.document_progress++;
+					GateFrame.this.progress.setNote("Annotating ("+GateFrame.this.document_progress+"/"+GateFrame.this.document_list.getModel().getSize()+")...");
+				}
+				GateFrame.this.progress_amount = progress;
+				GateFrame.this.progress.setProgress(progress);
+			}
+		});
+	}
+
+	@Override
+	public void onProcessingFinished() {
+		EventQueue.invokeLater(new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				GateFrame.this.progress.close();
+				GateFrame.this.progress = null;
+				GateFrame.this.setEnabled(true);
+			}
+		});
 	}
 	
 	/*

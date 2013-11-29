@@ -17,6 +17,7 @@ import gate.creole.ExecutionException;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.SerialAnalyserController;
 import gate.event.CreoleEvent;
+import gate.event.ProgressListener;
 import gate.util.GateException;
 
 import java.io.File;
@@ -84,6 +85,15 @@ public class GateApp implements GateAppType
 			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), ANNIEConstants.PLUGIN_DIR).toURI().toURL());
 			
 			this.base_pipeline = new AnniePipeline();
+			this.base_pipeline.addProgressListener(new ProgressListener(){
+				@Override public void processFinished() {
+				}
+
+				@Override
+				public void progressChanged(int progress) {
+					GateApp.this.documentProcessed(progress);
+				}
+			});
 			
 			this.corpus = new CorpusImpl(){
 				public void resourceLoaded(CreoleEvent e){
@@ -163,11 +173,22 @@ public class GateApp implements GateAppType
 				gate_listener.onCorpusLoadFailed();
 			}
 		}
+		finally
+		{
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onCorpusLoadComplete(getCorpus());
+			}
+		}
 		
 		this.config.set("loaded_files", document_directory.toString());
 		
 		try
 		{
+			for(GateAppListener gate_listener : this.listeners)
+			{
+				gate_listener.onCorpusProcessStart();
+			}
 			this.base_pipeline.execute(this.corpus);
 		}
 		catch (ExecutionException e)
@@ -178,7 +199,7 @@ public class GateApp implements GateAppType
 		{
 			for(GateAppListener gate_listener : this.listeners)
 			{
-				gate_listener.onCorpusLoadComplete(getCorpus());
+				gate_listener.onProcessingFinished();
 			}
 		}
 	}
@@ -190,6 +211,17 @@ public class GateApp implements GateAppType
 		for(GateAppListener gate_listener : this.listeners)
 		{
 			gate_listener.onCorpusDocumentLoaded();
+		}
+	}
+	
+	/**
+	 * called whenever a corpus loads a document
+	 * @param i 
+	 */
+	public void documentProcessed(int progress){
+		for(GateAppListener gate_listener : this.listeners)
+		{
+			gate_listener.onCorpusDocumentProcessed(progress);
 		}
 	}
 	

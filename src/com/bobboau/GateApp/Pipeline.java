@@ -5,6 +5,7 @@ package com.bobboau.GateApp;
 
 import gate.Corpus;
 import gate.creole.ExecutionException;
+import gate.event.ProgressListener;
 
 /**
  * @author bobboau
@@ -17,4 +18,6 @@ public interface Pipeline {
 	 * @throws ExecutionException 
 	 */
 	void execute(Corpus corpus) throws ExecutionException;
+	
+	void addProgressListener(ProgressListener l);
 }

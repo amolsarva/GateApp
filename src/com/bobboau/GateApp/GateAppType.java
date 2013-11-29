@@ -51,6 +51,21 @@ public interface GateAppType
 		 * @param document_count 
 		 */
 		void onCorpusLoadStart(int document_count);
+		
+		/**
+		 * called when processing starts
+		 */
+		void onCorpusProcessStart();
+		
+		/**
+		 * called when one of the documents has finished processing
+		 */
+		void onCorpusDocumentProcessed(int progress);
+		
+		/**
+		 * called when processing is done
+		 */
+		void onProcessingFinished();
 	}
 	
 	/**

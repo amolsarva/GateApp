@@ -12,6 +12,7 @@ import gate.Factory;
 import gate.creole.ExecutionException;
 import gate.creole.ResourceInstantiationException;
 import gate.creole.SerialAnalyserController;
+import gate.event.ProgressListener;
 
 /**
  * @author bobboau
@@ -60,6 +61,11 @@ public class AnniePipeline implements Pipeline {
 	public void execute(Corpus corpus) throws ExecutionException {
 		this.pipeline.setCorpus(corpus);
 		this.pipeline.execute();
+	}
+
+	@Override
+	public void addProgressListener(ProgressListener l) {
+		this.pipeline.addProgressListener(l);
 	}
 
 }
