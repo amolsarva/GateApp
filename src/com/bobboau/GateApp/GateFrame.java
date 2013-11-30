@@ -339,7 +339,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 			public void run()
 			{
 				GateFrame.this.progress_amount = -1;
-				GateFrame.this.document_progress = 0;
+				GateFrame.this.document_progress = 1;
 				GateFrame.this.progress = new ProgressMonitor(GateFrame.this, "Processing...", "", 0, 101);
 				
 				GateFrame.this.setEnabled(false);

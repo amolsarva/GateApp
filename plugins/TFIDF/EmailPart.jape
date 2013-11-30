@@ -5,54 +5,101 @@ Options: control = appelt
 
 Rule: named_email
 (
-	({Token.string == "\""}|{Token.kind == word, Token notWithin FileSize, Token notWithin Date})({Token.kind == word}|{Token.kind == number}|{Token.string == "."}|{Token.string == ","}|{Token.string == "\""}|{SpaceToken.kind != control})*
-	
-	{Token.string == "<"}
+	(
+		({Token.kind == symbol})?
+		({Token.string == "\""})?
+		{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		(
+			{Token.kind == word}
+			|
+			{Token.kind == number}
+			|
+			{Token.kind == punctuation, Token.string != ":"}
+			|
+			{SpaceToken.kind != control}
+		)[0,15]
+		({Token.string == "\""})?
+	):name
+	({SpaceToken.kind != control})*
+	({Token.string == "<"}
 	({Token.string != "@", Token.string != ">"})*
 	{Token.string == "@"}
-	({Token.string != ">"})* {Token.string == ">"}
+	({Token.string != ">"})* {Token.string == ">"}):email
 ):address
 -->
-:address.NamedEmail = {rule = "named_email"}
+:address.NamedEmail = {rule = "named_email", name = :name@string, email = :email@string}
 
+
+/*these are allowed to have one line break*/
 Rule: named_email_in_list
-{Token.string == ","}({SpaceToken.kind!=control})+
+{Token.string == ","}({SpaceToken.kind != control})[0,2]
 (
-	({Token.string == "\""}|{Token.kind == word, Token notWithin FileSize, Token notWithin Date})({Token.kind == word}|{Token.kind == number}|{Token.string == "."}|{Token.string == ","}|{Token.string == "\""}|{SpaceToken.kind != control})*
-	(({SpaceToken}|{Break})({Token.kind == word}|{Token.string == "."}|{SpaceToken.kind != control})*)?
-	
-	{Token.string == "<"}
+	(
+		({Token.kind == symbol})?
+		({Token.string == "\""})?
+		{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		(
+			{Token.kind == word}
+			|
+			{Token.kind == number}
+			|
+			{Token.kind == punctuation, Token.string != ":"}
+			|
+			{SpaceToken.kind != control}
+		)[0,15]
+		(
+			(
+				{SpaceToken.kind == control}
+				|
+				{Break}
+			)
+			(
+				{Token.kind == word}
+				|
+				{Token.kind == number}
+				|
+				{Token.kind == punctuation, Token.string != ":"}
+				|
+				{SpaceToken.kind != control}
+			)[0,15]
+		)
+		({Token.string == "\""})?
+	):name
+	({SpaceToken.kind != control})*
+	({Token.string == "<"}
 	({Token.string != "@", Token.string != ">"})*
 	{Token.string == "@"}
-	({Token.string != ">"})* {Token.string == ">"}
+	({Token.string != ">"})* {Token.string == ">"}):email
 ):address
 -->
-:address.NamedEmail = {rule = "named_email_in_list"}
+:address.NamedEmail = {rule = "named_email_in_list", name = :name@string, email = :email@string}
 
 
 Rule: not_actually_named_email
 (
-	{Token.string == "\""}
+	({Token.string == "\""}
 	{Token.kind == word}({Token.kind == word}|{Token.string == "."})*
 	{Token.string == "@"}
 	({Token.kind == word}|{Token.string == "."})+
 	{Token.string == "\""}
-	({SpaceToken.kind != control})*
+	({SpaceToken.kind != control})*):name
 	
-	{Token.string == "<"}
+	({Token.string == "<"}
 	({Token.string != "@", Token.string != ">"})*
 	{Token.string == "@"}
-	({Token.string != ">"})* {Token.string == ">"}
+	({Token.string != ">"})* {Token.string == ">"}):email
 ):address
 -->
-:address.NamedEmail = {rule = "not_actually_named_email"}
+:address.NamedEmail = {rule = "not_actually_named_email", name = :name@string, email = :email@string}
 
 
 Rule: unnamed_email
 (
-	({Token.string != "@"})+
+	(({Token.string != "@"})+
 	{Token.string == "@"}
-	{Token.string != "."} ({Token})* {Token.string == "."} ({Token})* {Token.kind == word}
+	{Token.string != "."} ({Token})* {Token.string == "."} ({Token})* {Token.kind == word}):email
 ):address
 -->
-:address.NamedEmail = {rule = "unnamed_email"}
+:address.NamedEmail = {rule = "unnamed_email", name = :email@string, email = :email@string}
+
+

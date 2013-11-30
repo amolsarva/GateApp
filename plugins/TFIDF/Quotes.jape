@@ -1,0 +1,81 @@
+Phase: Quote  
+Input: Token SpaceToken Date Break NamedEmail
+Options: control = appelt
+
+Rule: quote_on_blah_wrote
+(
+	{Token.string == "On"}
+	({SpaceToken.kind!=control})+
+	{Date}
+	({Token.string == ","})?
+	({SpaceToken})*
+	(
+		({SpaceToken.kind != control}|{Token.orth == upperInitial})+
+		|
+		{NamedEmail}
+	)
+	({SpaceToken.kind!=control})*
+	{Token.string == "wrote"}{Token.string == ":"}
+):quote
+-->
+:quote.Quote = {rule = "quote_on_blah_wrote"}
+
+
+Rule: forwarded_message
+{SpaceToken.kind == control}
+(
+	{Token.string == "Begin"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "forwarded"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "message"}
+	{Token.string == ":"}
+	({SpaceToken.kind!=control})*
+):quote
+{SpaceToken.kind == control}
+-->
+:quote.Quote = {rule = "forwarded_message"}
+
+
+Rule: quote_hidden
+(
+	{Token.string == "["}
+	{Token.string == "Quoted"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "text"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "hidden"}
+	{Token.string == "]"}
+):quote
+-->
+:quote.Quote = {rule = "quote_hidden"}
+
+Rule: mailto_quote
+(
+	{SpaceToken.kind == control}
+	{Token.string == "From"}
+	{Token.string == ":"}
+	(
+		{Token notWithin MessageHeader}
+		|
+		{SpaceToken notWithin MessageHeader}
+	)+
+	{Token.string == "@"}
+	(
+		{Token notWithin MessageHeader}
+		|
+		{SpaceToken notWithin MessageHeader}
+	)+
+	{Token.string == "Sent"}
+	{Token.string == ":"}
+	({SpaceToken notWithin MessageHeader})+
+	{Date}
+	(
+		{Token notWithin MessageHeader}
+		|
+		{SpaceToken notWithin MessageHeader}
+	)+
+
+):quote
+-->
+:quote.Quote = {rule = mailto}

@@ -17,25 +17,55 @@ Rule: date
 
 Rule: ugly_date
 (
-	{Token.string ==~ "Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Wed|Thur|Fri"}
-	{Token.string == ","}
-	({SpaceToken.kind != control})+
+	(
+		{Token.string ==~ "Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Wed|Thur|Thu|Fri"}
+		{Token.string == ","}
+		({SpaceToken.kind != control})+
+		(
+			{Token.kind == number}
+			({SpaceToken.kind != control})+
+		)?
+	)?
 	{Token.string ==~ "January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Oct|Nov|Dec"}
 	({SpaceToken.kind != control})+
 	{Token.kind == number}
-	{Token.string == ","}
-	({SpaceToken.kind != control})+
-	{Token.kind == number}
+	({Token.string == ","})?
 	(
 		({SpaceToken.kind != control})+
-		{Token.string == "at"}
+		{Token.kind == number}
+		({Token.string == ","})?
+	)?
+	(
 		({SpaceToken.kind != control})+
+		(
+			{Token.string == "at"}
+			({SpaceToken.kind != control})+
+		)?
 		{Token.kind == number}
 		{Token.string == ":"}
 		{Token.kind == number}
+		(
+			{Token.string == ":"}
+			{Token.kind == number}
+		)?
 		({SpaceToken.kind != control})*
-		{Token.string ==~ "AM|PM|am|pm"}
+		({Token.string ==~ "AM|PM|am|pm"})?
+		(
+			({Token.string == "+"}|{Token.subkind == dashpunct})[0,2]
+			{Token.kind == number}
+		)?
 	)?
 ):date
 -->
 :date.Date = {rule = "ugly_date"}
+
+Rule: url
+(
+	{Token.kind == "word"}
+	{Token.string == ":"}
+	{Token.string == "/"}
+	{Token.string == "/"}
+	({Token})+
+):url
+-->
+:url.URL = {rule = "url"}

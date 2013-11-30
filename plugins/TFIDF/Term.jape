@@ -1,9 +1,24 @@
 Phase: Terms  
-Input: Token  
+Input: Token
 Options: control = appelt
  
-Rule: simple_terms  
-({Token.kind == word, Token within Body, Token notWithin Boring})  
+Rule: simple_terms
+(
+	{
+		Token.kind == word, 
+	
+		Token within Body,
+	
+		Token notWithin Footer, 
+		Token notWithin Quote, 
+		Token notWithin Break, 
+		Token notWithin Boring, 
+		Token notWithin Date, 
+		Token notWithin URL, 
+		Token notWithin NamedEmail
+	}
+)
 :new_term  
 -->  
-:new_term.Term = {rule = "simple_terms", string = :new_term.Token.string}
+:new_term.Term = {rule = "simple_terms", string = :new_term@string, sender_name=:new_term.Body.sender_name, sender_email=:new_term.Body.sender_email}
+//the sender name and email are not working...

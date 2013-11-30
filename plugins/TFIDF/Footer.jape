@@ -1,0 +1,42 @@
+Phase: Footer
+Input: Token SpaceToken Quote MessageHeader
+Options: control = appelt
+
+Rule: iphone
+(
+	{Token.string == "Sent"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "from"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "my"}
+	({SpaceToken.kind!=control})+
+	{Token.string == "iPhone"}
+)
+:footer
+-->
+:footer.Footer = {rule = "iphone"}
+
+
+/*
+Rule: post_quote
+{Quote}
+(
+	{Token notWithin MessageHeader, Token notWithin Quote}
+	|
+	{SpaceToken notWithin MessageHeader, SpaceToken notWithin Quote}
+)+
+:footer
+-->
+:footer.Footer = {rule = "post_quote"}
+*/
+
+
+Rule: long_underscore
+{SpaceToken.kind==control}
+(
+	{Token.string == "_"}
+)+
+:footer
+{SpaceToken.kind==control}
+-->
+:footer.Footer = {rule = "dash_footer"}

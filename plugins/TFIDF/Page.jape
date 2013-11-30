@@ -20,13 +20,19 @@ Rule: thread_header
 Rule: message_header
 {SpaceToken.kind==control}
 (
-	{NamedEmail}
-	({Token}|{SpaceToken.kind!=control})+
+	({NamedEmail}):from
+	({Token}|{SpaceToken.kind!=control})*
+	
+	(
+		({SpaceToken.kind==control}|{Break})
+		{Token.string ==~ "Reply.."}{Token}{Token.string == ":"}({SpaceToken.kind!=control})*
+		{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
+	)?
+	
 	({SpaceToken.kind==control}|{Break})
-
 	{Token.string == "To"}{Token.string == ":"}({SpaceToken.kind!=control})*
 	{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
-	
+
 	(
 		({SpaceToken.kind==control}|{Break})
 		{Token.string == "Cc"}{Token.string == ":"}({SpaceToken.kind!=control})*
@@ -41,42 +47,5 @@ Rule: message_header
 	)?
 ):header
 -->
-:header.MessageHeader = {rule = "message_header"}
+:header.MessageHeader = {rule = "message_header", sender_name=:from.NamedEmail.name, sender_email=:from.NamedEmail.email}
 
-
-Rule: quote_on_blah_wrote
-(
-	{Token.string == "On"}
-	({SpaceToken.kind!=control})+
-	{Date}
-	{Token.string == ","}
-	(
-		({SpaceToken.kind != control}|{Token.orth == upperInitial})+
-		|
-		{NamedEmail}
-	)
-	{Token.string == "wrote"}{Token.string == ":"}
-	({Token notWithin NamedEmail}|{SpaceToken notWithin NamedEmail})*
-	(
-		({Token notWithin NamedEmail}|{SpaceToken.kind != control, SpaceToken notWithin NamedEmail})
-		|
-		{SpaceToken.kind == control}
-	)
-):quote
-
--->
-:quote.Quote = {rule = "quote_on_blah_wrote"}
-
-
-Rule: quote_hidden
-(
-	{Token.string == "["}
-	{Token.string == "Quoted"}
-	({SpaceToken.kind!=control})+
-	{Token.string == "text"}
-	({SpaceToken.kind!=control})+
-	{Token.string == "hidden"}
-	{Token.string == "]"}
-):quote
--->
-:quote.Quote = {rule = "quote_hidden"}

@@ -1,14 +1,25 @@
 Phase: Body
-Input: Token SpaceToken
+Input: Token SpaceToken MessageHeader
 Options: control = appelt
 
 
 Rule: body
+({MessageHeader}):header
 (
-	{Token notWithin ThreadHeader,		Token notWithin MessageHeader,		Token notWithin Quote,		Token notWithin Break}
+	{
+		Token notWithin ThreadHeader,
+		Token notWithin MessageHeader,
+		Token notWithin Quote,
+		Token notWithin Footer
+	}
 	|
-	{SpaceToken notWithin ThreadHeader,	SpaceToken notWithin MessageHeader,	SpaceToken notWithin Quote,	SpaceToken notWithin Break}
+	{
+		SpaceToken notWithin ThreadHeader,
+		SpaceToken notWithin MessageHeader,
+		SpaceToken notWithin Quote,
+		SpaceToken notWithin Footer
+	}
 )+:body
 -->
-:body.Body = { rule = "body" }
+:body.Body = { rule = "body", sender_name=:header.MessageHeader.sender_name, sender_email=:header.MessageHeader.sender_email }
 
