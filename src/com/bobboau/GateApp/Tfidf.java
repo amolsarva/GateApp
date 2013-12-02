@@ -3,8 +3,13 @@
  */
 package com.bobboau.GateApp;
 
+import gate.Annotation;
+import gate.AnnotationSet;
 import gate.Corpus;
+import gate.corpora.CorpusImpl;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -12,11 +17,17 @@ import java.util.List;
  *
  */
 public class Tfidf {
+	
+	private CorpusImpl corpus = null;
 	/**
 	 * set a new corpus
 	 * @param corpus
 	 */
+	
+	// shouldn't we pass in CorpusImpl? 
 	public void setCorpus(Corpus corpus){
+		this.corpus = (CorpusImpl) corpus;
+		//AnnotationSet annotations = corpus.get(idx).getAnnotations().get("Term");
 	}
 
 	/**
@@ -24,7 +35,20 @@ public class Tfidf {
 	 * @return
 	 */
 	public List<String> getTerms(){
-		return null;
+		List<String> allterms = new ArrayList<String>();
+		
+		for (int i = 0; i < corpus.size(); i++){
+			AnnotationSet annotations = corpus.get(i).getAnnotations().get("Term"); 
+			
+			Iterator<Annotation> index = annotations.iterator();
+			
+			while(index.hasNext()){
+				Annotation first = index.next();
+				allterms.add((String) first.getFeatures().get("string"));
+			}
+		}
+		
+		return allterms;
 	}
 
 	/**
@@ -33,7 +57,19 @@ public class Tfidf {
 	 * @return
 	 */
 	public List<String> getTerms(int doc_idx){
-		return null;
+
+		List<String> allterms = new ArrayList<String>();
+		
+		AnnotationSet annotations = corpus.get(doc_idx).getAnnotations().get("Term"); 
+		
+		Iterator<Annotation> index = annotations.iterator();
+		
+		while(index.hasNext()){
+			Annotation first = index.next();
+			allterms.add((String) first.getFeatures().get("string"));
+		}
+		
+		return allterms;
 	}
 
 	/**
