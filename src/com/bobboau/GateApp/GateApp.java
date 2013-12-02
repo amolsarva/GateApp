@@ -52,7 +52,12 @@ public class GateApp implements GateAppType
 	/**
 	 * the processing pipeline
 	 */
-	Pipeline base_pipeline = null;
+	private Pipeline base_pipeline = null;
+	
+	/**
+	 * the tfidf calculator
+	 */
+	private Tfidf tfidf = new Tfidf();
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -190,6 +195,7 @@ public class GateApp implements GateAppType
 				gate_listener.onCorpusProcessStart();
 			}
 			this.base_pipeline.execute(this.corpus);
+			this.tfidf.setCorpus(corpus);
 		}
 		catch (ExecutionException e)
 		{
@@ -252,8 +258,8 @@ public class GateApp implements GateAppType
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
 		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-		Annotation first = annotations.iterator().next();
-		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \nFirst one is "+first.getFeatures().get("string");
+		List<String> terms = this.tfidf.getTermsOrdered(idx);
+		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \top five terms are "+terms.get(0)+", "+terms.get(1)+", "+terms.get(2)+", "+terms.get(3)+", "+terms.get(4);
 		
 		results.string(result);
 	}
