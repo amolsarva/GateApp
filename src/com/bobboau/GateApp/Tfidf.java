@@ -106,7 +106,7 @@ public class Tfidf {
 		
 		ArrayList<String> terms_ordered = new ArrayList<String>();
 		for (int i = sorted_tfidf.size()-1; i >= 0; i--){
-			terms_ordered.add(tfidf_backwards.get(terms_ordered.get(i)));
+			terms_ordered.add(tfidf_backwards.get(sorted_tfidf.get(i)));
 		}
 		
 		return terms_ordered;
@@ -148,7 +148,7 @@ public class Tfidf {
 			while ((line = br.readLine()) != null) {
 			   String[] split = line.split("\\s+");
 			   split[0] = split[0].replaceAll("[\\s\\-()]", "");
-			   System.out.println(split[0] + split[1]);
+			   //System.out.println(split[0] + split[1]);
 			   
 			   term_frequency.put(split[0], Double.parseDouble(split[1]));
 			}
@@ -190,32 +190,29 @@ public class Tfidf {
 
 
 
-		doc_frequency.put("yellow", (double)1);
-		doc_frequency.put("something", (double)3);
 
 
 		ArrayList<String> terms = (ArrayList<String>) getTerms(doc_idx);
 
 		for (int i = 0; i<terms.size(); i++){
 
-			if (i==0) {
-				most_common = terms.get(i);
-				max_freq = 1;
+			if(term_frequency.containsKey(terms.get(i))){
+				double val = term_frequency.get(terms.get(i));
+				val++;
+				term_frequency.remove(terms.get(i));
+				term_frequency.put(terms.get(i), val);
 
-				term_frequency.put(terms.get(i), (double) 1);
+				if (val > max_freq){
+					max_freq = val;
+					most_common = terms.get(i);
+				}
 			}else{
-				if(term_frequency.containsKey(terms.get(i))){
-					double val = term_frequency.get(terms.get(i));
-					val++;
-					term_frequency.remove(terms.get(i));
-					term_frequency.put(terms.get(i), val);
+				term_frequency.put(terms.get(i),(double)1);
+				doc_num++;
 
-					if (val > max_freq){
-						max_freq = val;
-						most_common = terms.get(i);
-					}
-				}else{
-					term_frequency.put(terms.get(i),(double)1);
+				if (i==0) {
+					most_common = terms.get(i);
+					max_freq = 1;
 				}
 			}
 
@@ -228,18 +225,18 @@ public class Tfidf {
 			double idf = Math.log(doc_num/doc_frequency.get(entry.getKey())) / Math.log(10);
 
 
-			System.out.print("tf-idf" + tf*idf);
+			//System.out.print("tf-idf" + tf*idf);
 
-			System.out.println("key,val: " + entry.getKey() + "," + entry.getValue()); 
+			//System.out.println("key,val: " + entry.getKey() + "," + entry.getValue()); 
 
 			tfidf_temp.put((String) entry.getKey(), tf*idf);
 
 		}
 
-		System.out.println(most_common);
-		System.out.println(max_freq);
+		//System.out.println(most_common);
+		//System.out.println(max_freq);
 
-		System.out.println(doc_frequency.get("westside"));
+		//System.out.println(doc_frequency.get("westside"));
 
 		tfidf = tfidf_temp;
 	}
