@@ -173,6 +173,9 @@ public class ThreadedGateApp implements GateAppType
 		}
 	}
 
+	/**
+	 * sets the block size eventually
+	 */
 	@Override
 	public void setBlockSize(final int size) {
 		try
@@ -199,6 +202,9 @@ public class ThreadedGateApp implements GateAppType
 		return ThreadedGateApp.this.my_app.getBlockSize();
 	}
 
+	/**
+	 * sets the tfidf implementation at some point in the future
+	 */
 	@Override
 	public void setTFIDF(final String implementation) {
 		try

@@ -19,5 +19,8 @@ public interface Pipeline {
 	 */
 	void execute(Corpus corpus) throws ExecutionException;
 	
+	/**
+	 * @param l
+	 */
 	void addProgressListener(ProgressListener l);
 }

@@ -331,6 +331,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		this.setEnabled(true);
 	}
 
+	/**
+	 * tell the UI that processing has started
+	 */
 	@Override
 	public void onCorpusProcessStart() {
 		EventQueue.invokeLater(new Runnable()
@@ -347,6 +350,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		});
 	}
 
+	/**
+	 * tell the UI that some processing has happened
+	 */
 	@Override
 	public void onCorpusDocumentProcessed(final int progress) {
 		EventQueue.invokeLater(new Runnable()
@@ -364,6 +370,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		});
 	}
 
+	/**
+	 * tell the UI that processing is done
+	 */
 	@Override
 	public void onProcessingFinished() {
 		EventQueue.invokeLater(new Runnable()

@@ -59,6 +59,7 @@ public interface GateAppType
 		
 		/**
 		 * called when one of the documents has finished processing
+		 * @param progress 
 		 */
 		void onCorpusDocumentProcessed(int progress);
 		
@@ -110,12 +111,13 @@ public interface GateAppType
 	
 	/**
 	 * sets the size of the tfidf blocks
+	 * @return the size of the block
 	 */
 	public int getBlockSize();
 
 	/**
 	 * sets the implementation of tfidf to one of the specific implementations
-	 * @param string
+	 * @param implementation
 	 */
 	public void setTFIDF(String implementation);
 }

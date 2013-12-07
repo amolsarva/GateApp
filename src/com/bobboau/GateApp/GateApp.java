@@ -119,7 +119,7 @@ public class GateApp implements GateAppType
 			//load up what ever corpus we had last time, default to nothing
 			setCorpus(new URL(this.config.get("loaded_files", "")));
 			
-			term_blocks.setBlockSize(this.config.get("block_size", 5));
+			this.term_blocks.setBlockSize(this.config.get("block_size", 5));
 		}
 		catch (IOException e)
 		{
@@ -227,7 +227,7 @@ public class GateApp implements GateAppType
 	
 	/**
 	 * called whenever a corpus loads a document
-	 * @param i 
+	 * @param progress how far along is it
 	 */
 	public void documentProcessed(int progress){
 		for(GateAppListener gate_listener : this.listeners)

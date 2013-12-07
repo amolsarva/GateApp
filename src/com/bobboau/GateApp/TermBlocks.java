@@ -13,6 +13,10 @@ import gate.AnnotationSet;
 import gate.Corpus;
 import gate.Document;
 
+/**
+ * @author Bobboau
+ * finds blocks of terms and generates a score for them, basically this is the list of all possible extractions
+ */
 public class TermBlocks {
 	private class Block{
 		Block(String[] values, double score){
@@ -55,6 +59,7 @@ public class TermBlocks {
 	
 	/**
 	 * get block size
+	 * @return size of the block as it is currently set
 	 */
 	public int getBlockSize(){
 		return this.block_size;
@@ -168,7 +173,7 @@ public class TermBlocks {
 	/**
 	 * returns a list of strings ordered from greatest to least score
 	 * @param idx -- the document to get blocks for
-	 * @return
+	 * @return a list of strings extracted from the document that should be reasonable summarizations
 	 */
 	public List<String> getBlocksAsStrings(int idx) {
 		if(this.block_size < 1 || this.corpus == null){
