@@ -21,6 +21,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 
+/**
+ * 
+ *
+ */
 public class AncTfidf implements Tfidf{
 	private Map<String, Double> term_frequency = new HashMap<String, Double>();
 	private boolean corp_freq_set = false;
@@ -39,7 +43,7 @@ public class AncTfidf implements Tfidf{
 
 	/**
 	 * get a list of allterms in all documents
-	 * @return
+	 * @return a list of  all terms
 	 */
 	public List<String> getTerms(){
 		List<String> allterms = new ArrayList<String>();
@@ -61,7 +65,7 @@ public class AncTfidf implements Tfidf{
 	/**
 	 * get an unsorted list of all terms in the specified document
 	 * @param doc_idx which document we want the terms for in no particular order
-	 * @return
+	 * @return a list of all terms in a given document
 	 */
 	public List<String> getTerms(int doc_idx){
 
@@ -82,7 +86,7 @@ public class AncTfidf implements Tfidf{
 	/**
 	 * get a sorted list of all terms in the specified document, sorted in  order from highest score to lowest
 	 * @param doc_idx which document we want the terms for in no particular order
-	 * @return
+	 * @return sorted list of terms in a given document
 	 */
 	public List<String> getTermsOrdered(int doc_idx){
 		try {
@@ -113,7 +117,7 @@ public class AncTfidf implements Tfidf{
 	 * get the score of the given term in he context of the given document
 	 * @param term the term we want a scrote for
 	 * @param doc_idx which document we want the score calculated with respect to
-	 * @return
+	 * @return the tfidf score of a given term in respect to a given document
 	 */
 	public double getScore(String term, int doc_idx){
 		try {
@@ -127,7 +131,7 @@ public class AncTfidf implements Tfidf{
 	}
 	
 	
-	/*
+	/**
 	 * This takes the OANC corpus and brings the information into a 
 	 * HashMap, this allows TF-IDf to be calculated quickly
 	 * The TF-IDF values has been changed to TF-ITTF a variant
@@ -167,7 +171,7 @@ public class AncTfidf implements Tfidf{
 		this.term_frequency = term_frequency;	
 	}
 	
-	/*
+	/**
 	 * Given a document this will calculate the tf-idf
 	 * values of the document and store these 
 	 * in the tfidf data structure

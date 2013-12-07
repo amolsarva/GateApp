@@ -69,6 +69,9 @@ public class AnniePipeline implements Pipeline {
 		this.pipeline.execute();
 	}
 
+	/**
+	 * adds a listener to report when progress has been made
+	 */
 	@Override
 	public void addProgressListener(ProgressListener l) {
 		this.pipeline.addProgressListener(l);
