@@ -53,11 +53,11 @@ public class GateApp implements GateAppType
 	 * the processing pipeline
 	 */
 	private Pipeline base_pipeline = null;
-	
+		
 	/**
-	 * the tfidf calculator
+	 * calculates blocks of high TF/IDF
 	 */
-	private Tfidf tfidf = new Tfidf();
+	private TermBlocks term_blocks = new TermBlocks();
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -88,7 +88,8 @@ public class GateApp implements GateAppType
 			Gate.init();
 			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir")).toURI().toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), ANNIEConstants.PLUGIN_DIR).toURI().toURL());
-			
+			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), "Tools").toURI().toURL());
+		
 			this.base_pipeline = new AnniePipeline();
 			this.base_pipeline.addProgressListener(new ProgressListener(){
 				@Override public void processFinished() {
@@ -113,8 +114,12 @@ public class GateApp implements GateAppType
 				gate_listener.onGateInit();
 			}
 			
+			setTFIDF("Local");
+			
 			//load up what ever corpus we had last time, default to nothing
 			setCorpus(new URL(this.config.get("loaded_files", "")));
+			
+			term_blocks.setBlockSize(this.config.get("block_size", 5));
 		}
 		catch (IOException e)
 		{
@@ -195,7 +200,7 @@ public class GateApp implements GateAppType
 				gate_listener.onCorpusProcessStart();
 			}
 			this.base_pipeline.execute(this.corpus);
-			this.tfidf.setCorpus(corpus);
+			this.term_blocks.setCorpus(corpus);
 		}
 		catch (ExecutionException e)
 		{
@@ -258,10 +263,35 @@ public class GateApp implements GateAppType
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
 		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-		List<String> terms = this.tfidf.getTermsOrdered(idx);
-		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \top five terms are "+terms.get(0)+", "+terms.get(1)+", "+terms.get(2)+", "+terms.get(3)+", "+terms.get(4);
+		List<String> terms = this.term_blocks.getBlocksAsStrings(idx);
+		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \ntop five term blocks are \n\""+terms.get(0)+"\"\n\""+terms.get(1)+"\"\n\""+terms.get(2)+"\"\n\""+terms.get(3)+"\"\n\""+terms.get(4);
 		
 		results.string(result);
+	}
+
+	/**
+	 * set the block size
+	 */
+	@Override
+	public void setBlockSize(int size) {
+		this.term_blocks.setBlockSize(size);
+		this.config.set("block_size", size);
+	}
+
+	/**
+	 * get the block size
+	 */
+	@Override
+	public int getBlockSize() {
+		return this.term_blocks.getBlockSize();
+	}
+
+	/**
+	 * set the tfidf implementation
+	 */
+	@Override
+	public void setTFIDF(String implementation) {
+		this.term_blocks.setTfidf(implementation);
 	}
 
 } // class GateApp

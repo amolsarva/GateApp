@@ -378,6 +378,33 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		});
 	}
 	
+	/**
+	 * have the user change the block size
+	 */
+	void onChangeBlockSize(){
+		String new_size = JOptionPane.showInputDialog(this, "Enter new block size", the_app.getBlockSize());
+		try{
+			the_app.setBlockSize(Integer.parseInt(new_size));
+		}
+		catch(Exception e){
+			//parse error, do nothing
+		}
+	}
+
+	/**
+	 * change the TF/IDF algorithm to the local implementation
+	 */
+	private void onUseLocalTFIDF() {
+		this.the_app.setTFIDF("Local");
+	}
+
+	/**
+	 * change the TF/IDF algorithm to the ANC implementation
+	 */
+	private void onUseAncTFIDF() {
+		this.the_app.setTFIDF("ANC");
+	}
+	
 	/*
 	 /-------------------------------\
 	 | Never Ending Menu Boilerplate |
@@ -393,6 +420,8 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		
 		setupFileMenu(menu_bar);
 		
+		setupAlgorithmMenu(menu_bar);
+		
 		setJMenuBar(menu_bar);
 	}
 	
@@ -405,11 +434,40 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		JMenu menu = new JMenu("File");
 		menu_bar.add(menu);
 		
-		//change your color menu option
-		addMenuItem(menu, new JMenuItem("Load Corpus",KeyEvent.VK_T), "Select files to process", ActionEvent.CTRL_MASK,
+		//load a corpus from a directory
+		addMenuItem(menu, new JMenuItem("Load Corpus",KeyEvent.VK_C), "Select files to process", ActionEvent.CTRL_MASK,
 				new ActionListener(){public void actionPerformed(ActionEvent Event){
 					onLoadCorpus();
 				}});
+	}
+	
+	/**
+	 * function for setting up the algorithm in the file menu
+	 * @param menu_bar
+	 */
+	private void setupAlgorithmMenu(JMenuBar menu_bar)
+	{
+		JMenu menu = new JMenu("Algorithm");
+		menu_bar.add(menu);
+		
+		//change the size of the tfidf blocks
+		addMenuItem(menu, new JMenuItem("Change Block Size",KeyEvent.VK_B), "Change block size", ActionEvent.CTRL_MASK,
+				new ActionListener(){public void actionPerformed(ActionEvent Event){
+					onChangeBlockSize();
+				}});
+		
+		//change the size of the tfidf blocks
+		addMenuItem(menu, new JMenuItem("Use Local TF/IDF",KeyEvent.VK_L), "Local TF/IDF", ActionEvent.CTRL_MASK,
+				new ActionListener(){public void actionPerformed(ActionEvent Event){
+					onUseLocalTFIDF();
+				}});
+		
+		//change the size of the tfidf blocks
+		addMenuItem(menu, new JMenuItem("Use ANC TF/IDF",KeyEvent.VK_L), "ANC TF/IDF", ActionEvent.CTRL_MASK,
+				new ActionListener(){public void actionPerformed(ActionEvent Event){
+					onUseAncTFIDF();
+				}});
+		
 	}
 	
 	/**

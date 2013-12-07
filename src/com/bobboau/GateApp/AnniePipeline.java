@@ -35,9 +35,11 @@ public class AnniePipeline implements Pipeline {
 		
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.annotdelete.AnnotationDeletePR"));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.tokeniser.DefaultTokeniser"));
-		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer",
-				gate.Utils.featureMap("listsURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/tfidf.def").toURI().toURL(),"encoding", "UTF-8")));
+//		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.gazetteer.DefaultGazetteer",
+//				gate.Utils.featureMap("listsURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/tfidf.def").toURI().toURL(),"encoding", "UTF-8")));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.splitter.SentenceSplitter"));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.POSTagger"));
+		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.morph.Morph"));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",
 				gate.Utils.featureMap("grammarURL", new File(System.getProperty("user.dir")+"/plugins/TFIDF/Parts.jape").toURI().toURL(),"encoding", "UTF-8")));
 		this.pipeline.add((gate.LanguageAnalyser)Factory.createResource("gate.creole.Transducer",

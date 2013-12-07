@@ -5,7 +5,8 @@ Options: control = appelt
 Rule: simple_terms
 (
 	{
-		Token.kind == word, 
+		Token.kind == word,
+		Token@length > 2,
 	
 		Token within Body,
 	
@@ -20,5 +21,5 @@ Rule: simple_terms
 )
 :new_term  
 -->  
-:new_term.Term = {rule = "simple_terms", string = :new_term@string, sender_name=:new_term.Body.sender_name, sender_email=:new_term.Body.sender_email}
+:new_term.Term = {rule = "simple_terms", string = :new_term.Token.root, sender_name=:new_term.Body.sender_name, sender_email=:new_term.Body.sender_email}
 //the sender name and email are not working...

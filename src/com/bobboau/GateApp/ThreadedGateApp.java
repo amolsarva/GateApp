@@ -173,4 +173,48 @@ public class ThreadedGateApp implements GateAppType
 		}
 	}
 
+	@Override
+	public void setBlockSize(final int size) {
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.setBlockSize(size);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * yeah hypothetically this could have concurrency issues, but it isn't going to in practice, this value only changes in responce to the UI
+	 */
+	@Override
+	public int getBlockSize() {
+		return ThreadedGateApp.this.my_app.getBlockSize();
+	}
+
+	@Override
+	public void setTFIDF(final String implementation) {
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.setTFIDF(implementation);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 }

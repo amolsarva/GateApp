@@ -59,7 +59,7 @@ Rule: ugly_date
 -->
 :date.Date = {rule = "ugly_date"}
 
-Rule: url
+Rule: protocol
 (
 	{Token.kind == "word"}
 	{Token.string == ":"}
@@ -68,4 +68,20 @@ Rule: url
 	({Token})+
 ):url
 -->
-:url.URL = {rule = "url"}
+:url.URL = {rule = "protocol"}
+
+Rule: no_protocol
+(
+	({Token.string != "@"})*
+	(
+		{Token.kind == "word", Token.string != "@"}
+		{Token.string == "."}
+	)+
+	{Token.kind == "word"}
+	(
+		{Token.string == "/"}
+		({Token})+
+	)?
+):url
+-->
+:url.URL = {rule = "no_protocol"}

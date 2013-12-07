@@ -101,4 +101,21 @@ public interface GateAppType
 	 * @param results NLP magic
 	 */
 	public void getDocumentSubject(int idx, ResultRetriever results);
+	
+	/**
+	 * sets the size of the tfidf blocks
+	 * @param size
+	 */
+	public void setBlockSize(int size);
+	
+	/**
+	 * sets the size of the tfidf blocks
+	 */
+	public int getBlockSize();
+
+	/**
+	 * sets the implementation of tfidf to one of the specific implementations
+	 * @param string
+	 */
+	public void setTFIDF(String implementation);
 }
