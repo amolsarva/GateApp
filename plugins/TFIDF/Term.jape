@@ -15,8 +15,10 @@ Rule: simple_terms
 		Token notWithin Break, 
 		Token notWithin Boring, 
 		Token notWithin Date, 
-		Token notWithin URL, 
-		Token notWithin NamedEmail
+		Token notWithin URL,
+		Token notWithin NamedEmail, 
+		Token notWithin Person, 
+		Token notWithin FirstPerson
 	}
 )
 :new_term  

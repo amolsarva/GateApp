@@ -263,7 +263,7 @@ public class GateApp implements GateAppType
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
 		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-		List<String> terms = this.term_blocks.getBlocksAsStrings(idx);
+		List<String> terms = this.term_blocks.getBlocksAsStrings(idx, 5);
 		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \ntop five term blocks are \n\""+terms.get(0)+"\"\n\""+terms.get(1)+"\"\n\""+terms.get(2)+"\"\n\""+terms.get(3)+"\"\n\""+terms.get(4);
 		
 		results.string(result);

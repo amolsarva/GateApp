@@ -55,6 +55,8 @@ person_female.lst:person_first:female
 person_full.lst:person_full
 person_male_cap.lst:person_first:male
 person_male.lst:person_first:male
+person_male_hindi.lst:person_first:male
+person_female_hindi.lst:person_first:female
 person_relig.lst:person_full:relig
 person_sci.lst:person_full:sci
 person_spur.lst:spur

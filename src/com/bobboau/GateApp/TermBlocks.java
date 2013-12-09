@@ -12,20 +12,53 @@ import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Corpus;
 import gate.Document;
+import gate.util.InvalidOffsetException;
 
 /**
  * @author Bobboau
  * finds blocks of terms and generates a score for them, basically this is the list of all possible extractions
  */
 public class TermBlocks {
+	
+	/**
+	 * represents a contiguous sequence of terms
+	 * @author Bobboau
+	 *
+	 */
 	private class Block{
-		Block(String[] values, double score){
-			this.values = new String[block_size];
-			System.arraycopy(values, 0, this.values, 0, block_size);
+		Block(Annotation[] values, double score){
+			this.values = new Annotation[TermBlocks.this.block_size];
+			System.arraycopy(values, 0, this.values, 0, TermBlocks.this.block_size);
 			this.score = score;
 		}
-		String[] values;
+		Annotation[] values;
+		long getDocumentStart(){
+			for(int i = 0; i < TermBlocks.this.block_size; i++){
+				if(this.values[i] != null){
+					return this.values[i].getStartNode().getOffset().longValue();
+				}
+			}
+			return 0L;
+			
+		}
+		long getDocumentStop(){
+			for(int i = TermBlocks.this.block_size-1; i>-1; i--){
+				if(this.values[i] != null){
+					return this.values[i].getEndNode().getOffset().longValue();
+				}
+			}
+			return 0L;
+		}
 		double score;
+	}
+	
+	/**
+	 * class that represents a section of text in a document
+	 * @author Bobboau
+	 */
+	private class Blob {
+		public long start;
+		public long end;
 	}
 	
 	/**
@@ -70,7 +103,7 @@ public class TermBlocks {
 	 * @param corpus
 	 */
 	public void setCorpus(Corpus corpus){
-		tfidf.setCorpus(corpus);
+		this.tfidf.setCorpus(corpus);
 		this.corpus = corpus;
 		calculate();
 	}
@@ -98,13 +131,13 @@ public class TermBlocks {
 		if(this.block_size < 1 || this.corpus == null){
 			return;
 		}
-		blocks = new ArrayList<ArrayList<Block>>();
-		String[] working_set = new String[this.block_size];
-		for(int i = 0; i<corpus.size(); i++)
+		this.blocks = new ArrayList<ArrayList<Block>>();
+		Annotation[] working_set = new Annotation[this.block_size];
+		for(int i = 0; i<this.corpus.size(); i++)
 		{
 			clearWorkingSet(working_set);
 			ArrayList<Block> doc_blocks = new ArrayList<Block>(); 
-			Document document = corpus.get(i);
+			Document document = this.corpus.get(i);
 			Set<String> types = new HashSet<String>();
 			types.add("Term");
 			types.add("MessageHeader");
@@ -119,24 +152,24 @@ public class TermBlocks {
 				}
 				else if(annotation.getType().equals("Term"))
 				{
-					pushWorkingSet(working_set, annotation.getFeatures().get("string").toString());
+					pushWorkingSet(working_set, annotation);
 					if(workingSetIsReady(working_set)){
 						doc_blocks.add(new Block(working_set, workingSetScore(working_set, i)));
 					}
 				}
 			}
-			blocks.add(doc_blocks);
+			this.blocks.add(doc_blocks);
 		}
 	}
 	
 	/**
 	 * get the value of the working set
 	 */
-	private double workingSetScore(String[]ws, int doc_idx){
+	private double workingSetScore(Annotation[]ws, int doc_idx){
 		double value = 0.0;
 		for(int i = 0; i<this.block_size; i++){
 			if(ws[i] != null){
-				value += tfidf.getScore(ws[i], doc_idx);
+				value += this.tfidf.getScore(ws[i].getFeatures().get("string").toString(), doc_idx);
 			}
 		}
 		return value;
@@ -145,7 +178,7 @@ public class TermBlocks {
 	/**
 	 * tells if the working set is filled with enough stuff to count yet
 	 */
-	private boolean workingSetIsReady(String[]ws){
+	private boolean workingSetIsReady(Annotation[]ws){
 		return ws[0] != null;
 	}
 	
@@ -153,7 +186,7 @@ public class TermBlocks {
 	 * removes all state info
 	 * @param ws
 	 */
-	private void clearWorkingSet(String[]ws){
+	private void clearWorkingSet(Annotation[]ws){
 		for(int i = 0; i<this.block_size; i++){
 			ws[i] = null;
 		}
@@ -163,7 +196,7 @@ public class TermBlocks {
 	 * adds a new value to the working set
 	 * @param ws
 	 */
-	private void pushWorkingSet(String[]ws, String value){
+	private void pushWorkingSet(Annotation[]ws, Annotation value){
 		for(int i = 1; i<this.block_size; i++){
 			ws[i-1] = ws[i];
 		}
@@ -172,17 +205,96 @@ public class TermBlocks {
 
 	/**
 	 * returns a list of strings ordered from greatest to least score
-	 * @param idx -- the document to get blocks for
+	 * @param idx the document to get blocks for
+	 * @param merge_threshold if two blocks are within this ordinal distance and overlap, merge them into the higher position
 	 * @return a list of strings extracted from the document that should be reasonable summarizations
 	 */
-	public List<String> getBlocksAsStrings(int idx) {
+	public List<String> getBlocksAsStrings(int idx, int merge_threshold) {
 		if(this.block_size < 1 || this.corpus == null){
 			return new ArrayList<String>();
 		}
 		
+		ArrayList<Block> doc_blocks = getSortedBlocks(idx);
+		
+		ArrayList<Blob> blobs = mergeLocalText(merge_threshold, doc_blocks);
+		
+		return blobsToStrings(idx, blobs);
+	}
+
+	/**
+	 * given a bunch of blobs and a document return a bunch of strings from that document
+	 * @param document_idx
+	 * @param blobs
+	 * @return
+	 */
+	private List<String> blobsToStrings(int document_idx, ArrayList<Blob> blobs)
+	{
+		ArrayList<String> ret = new ArrayList<String>();
+		for(Blob blob : blobs){
+			try
+			{
+				ret.add(
+					this.corpus.get(document_idx).getContent().getContent(
+						new Long(blob.start),
+						new Long(blob.end)
+					).toString().replaceAll("[\\r\\n\\s]+", "  ")
+				);
+			}
+			catch (InvalidOffsetException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * given a bunch of blocks make a bunch of blobs that don't have any overlapping text near by (defined by merge threshold)
+	 * @param merge_threshold
+	 * @param doc_blocks
+	 * @return
+	 */
+	private ArrayList<Blob> mergeLocalText(int merge_threshold, ArrayList<Block> doc_blocks)
+	{
+		ArrayList<Blob> blobs = new ArrayList<Blob>();
+		
+		//merge near by overlaps
+		outter : for(Block block : doc_blocks){
+			for(int j = 0; j<merge_threshold; j++){
+				if(blobs.size() - 1 - j > -1){
+					Blob old_blob = blobs.get(blobs.size() - 1 - j);
+					//if this block overlaps an existing blob within threshold distance merge this block into that blob
+					if(
+						block.getDocumentStart() > old_blob.start && block.getDocumentStart() < old_blob.end
+						||
+						block.getDocumentStop() > old_blob.start && block.getDocumentStop() < old_blob.end
+					){
+						old_blob.start = Math.min(old_blob.start, block.getDocumentStart());
+						old_blob.end = Math.min(old_blob.end, block.getDocumentStop());
+						continue outter;
+					}
+				}
+			}
+			
+			//if no overlaps were found just add the block as a new blob
+			Blob new_blob = new Blob();
+			new_blob.start = block.getDocumentStart();
+			new_blob.end = block.getDocumentStop();
+			blobs.add(new_blob);
+		}
+		return blobs;
+	}
+
+	/**
+	 * get a list of blocks ordered by score
+	 * @param idx
+	 * @return
+	 */
+	private ArrayList<Block> getSortedBlocks(int idx)
+	{
 		ArrayList<Block> doc_blocks = new ArrayList<Block>();
 		
-		for(Block block : blocks.get(idx)){
+		for(Block block : this.blocks.get(idx)){
 			doc_blocks.add(block);
 		}
 		
@@ -193,26 +305,16 @@ public class TermBlocks {
 				if(diff == 0.0){
 					return 0;
 				}
-				else
-				{
-					return diff < 0.0 ? 1 : -1;
-				}
+				return diff < 0.0 ? 1 : -1;
 			}
 		});
-		
-		ArrayList<String> ret = new ArrayList<String>();
-		for(Block block : doc_blocks){
-			String r = "";
-			for(int i = 0; i<this.block_size; i++){
-				if(block.values[i] != null){
-					r += " "+block.values[i];
-				}
-			}
-			ret.add(r);
-		}
-		return ret;
+		return doc_blocks;
 	}
 	
+	/**
+	 * change the tfidf implementation
+	 * @param implementation
+	 */
 	void setTfidf(String implementation){
 		switch(implementation){
 			case "Local":
@@ -220,6 +322,9 @@ public class TermBlocks {
 			break;
 			case "ANC":
 				this.tfidf = new AncTfidf();
+			break;
+			default:
+				this.tfidf = new LocalTfidf();
 			break;
 		}
 		if(this.corpus != null){
