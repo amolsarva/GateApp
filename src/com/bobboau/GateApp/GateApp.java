@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-
+//import graph.*;
 
 /**
  * @author Bobboau
@@ -58,6 +58,11 @@ public class GateApp implements GateAppType
 	 * calculates blocks of high TF/IDF
 	 */
 	private TermBlocks term_blocks = new TermBlocks();
+	
+	/**
+	 * TermBlocks is not the apropriate place to extract people
+	 */
+	PersonExtractor person_extractor = new PersonExtractor();
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -200,7 +205,8 @@ public class GateApp implements GateAppType
 				gate_listener.onCorpusProcessStart();
 			}
 			this.base_pipeline.execute(this.corpus);
-			this.term_blocks.setCorpus(corpus);
+			this.term_blocks.setCorpus(this.corpus);
+			this.person_extractor.setCorpus(this.corpus);
 		}
 		catch (ExecutionException e)
 		{
@@ -252,10 +258,21 @@ public class GateApp implements GateAppType
 	 * @param idx
 	 */
 	@Override
-	public void getDocumentContent(int idx, ResultRetriever results){
-		results.string(this.corpus.get(idx).getContent().toString());
+	public void getDocumentContent(int idx, ResultRetriever<String> results){
+		results.value(this.corpus.get(idx).getContent().toString());
 	}
-	
+	/**
+	 */
+	@Override
+	public void getDocumentPeople(int idx, ResultRetriever<List<Vertex_people>> results){
+		results.value(this.person_extractor.get_people(idx));
+	}
+	/**
+	 */
+	@Override
+	public void getDocumentRelations(int idx, ResultRetriever<List<edge_relation>> results){
+		results.value(this.person_extractor.get_relation(idx));
+	}
 	/**
 	 * @param idx
 	 */
@@ -266,9 +283,11 @@ public class GateApp implements GateAppType
 		List<String> terms = this.term_blocks.getBlocksAsStrings(idx, 5);
 		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \ntop five term blocks are \n\""+terms.get(0)+"\"\n\""+terms.get(1)+"\"\n\""+terms.get(2)+"\"\n\""+terms.get(3)+"\"\n\""+terms.get(4);
 		
-		results.string(result);
+		results.value(result);
 	}
-
+	
+	
+	
 	/**
 	 * set the block size
 	 */
@@ -291,7 +310,9 @@ public class GateApp implements GateAppType
 	 */
 	@Override
 	public void setTFIDF(String implementation) {
-		this.term_blocks.setTfidf(implementation);
+		Tfidf new_tfidf = Tfidf.factory.make(implementation);
+		this.term_blocks.setTfidf(new_tfidf);
+		this.person_extractor.setTfidf(new_tfidf);
 	}
 
 } // class GateApp

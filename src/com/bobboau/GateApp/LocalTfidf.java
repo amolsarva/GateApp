@@ -14,8 +14,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 
+import javax.swing.text.html.HTMLDocument.Iterator;
 
+import gate.*;
+import gate.creole.*;
+import gate.util.*;
+import gate.util.persistence.PersistenceManager;
+import gate.corpora.RepositioningInfo;
+//import graph.*;
 /**
  * @author bobboau
  * this is a TFIDF calculator the works only with the corpus at hand
@@ -46,11 +55,11 @@ public class LocalTfidf implements Tfidf {
 		for(Document document : corpus)
 		{
 			HashMap<String,Integer> term_count = new HashMap<String,Integer>();
-			AnnotationSet annotations = document.getAnnotations().get("Term");
+			AnnotationSet annotations = document.getAnnotations().get("Term");			
+			
 			for(Annotation term : annotations)
 			{
 				String term_string = term.getFeatures().get("string").toString().toLowerCase().replaceAll("[^A-Za-z0-9]", "");
-				
 				if(term_count.containsKey(term_string)){
 					term_count.put(term_string, term_count.get(term_string)+1);
 				}
@@ -126,5 +135,12 @@ public class LocalTfidf implements Tfidf {
 		catch(IndexOutOfBoundsException e){
 			return 0.0;
 		}
+		catch(NullPointerException e){
+			return 0.0;
+		}
 	}
+
+	
+	
+	
 }

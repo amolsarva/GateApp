@@ -1,6 +1,7 @@
 package com.bobboau.GateApp;
 
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -133,7 +134,7 @@ public class ThreadedGateApp implements GateAppType
 	 * 
 	 */
 	@Override
-	public void getDocumentContent(final int idx, final ResultRetriever results)
+	public void getDocumentContent(final int idx, final ResultRetriever<String> results)
 	{
 		try
 		{
@@ -150,12 +151,59 @@ public class ThreadedGateApp implements GateAppType
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public void getDocumentPeople(final int idx, final ResultRetriever<List<Vertex_people>> results){
+		
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.getDocumentPeople(idx, results);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/**
+	 * 
+	 */
+	@Override
+	public void getDocumentRelations(final int idx, final ResultRetriever<List<edge_relation>> results){
+		
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.getDocumentRelations(idx, results);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+	
 
 	/**
 	 * 
 	 */
 	@Override
-	public void getDocumentSubject(final int idx, final ResultRetriever results)
+	public void getDocumentSubject(final int idx, final ResultRetriever<String> results)
 	{
 		try
 		{

@@ -2,8 +2,9 @@ package com.bobboau.GateApp;
 import gate.util.GateException;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-
+//import graph
 
 
 /**
@@ -71,13 +72,14 @@ public interface GateAppType
 	
 	/**
 	 * simple interface for getting data
+	 * @param <Type> the type of result we are returning
 	 */
-	public interface ResultRetriever{
+	public interface ResultRetriever<Type>{
 		/**
 		 * gets you a string value
 		 * @param value 
 		 */
-		void string(String value);
+		void value(Type value);
 	}
 	
 	/**
@@ -95,13 +97,23 @@ public interface GateAppType
 	 * @param idx
 	 * @param results contents of file
 	 */
-	public void getDocumentContent(int idx, ResultRetriever results);
+	public void getDocumentContent(int idx, ResultRetriever<String> results);
+	/**
+	 * @param idx
+	 * @param results
+	 */
+	public void getDocumentPeople(int idx, ResultRetriever<List<Vertex_people>> results);
+	/**
+	 * @param idx
+	 * @param results
+	 */
+	public void getDocumentRelations(int idx, ResultRetriever<List<edge_relation>> results);
 	
 	/**
 	 * @param idx
 	 * @param results NLP magic
 	 */
-	public void getDocumentSubject(int idx, ResultRetriever results);
+	public void getDocumentSubject(int idx, ResultRetriever<String> results);
 	
 	/**
 	 * sets the size of the tfidf blocks

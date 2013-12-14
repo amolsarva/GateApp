@@ -131,6 +131,7 @@ public class TermBlocks {
 		if(this.block_size < 1 || this.corpus == null){
 			return;
 		}
+
 		this.blocks = new ArrayList<ArrayList<Block>>();
 		Annotation[] working_set = new Annotation[this.block_size];
 		for(int i = 0; i<this.corpus.size(); i++)
@@ -138,9 +139,11 @@ public class TermBlocks {
 			clearWorkingSet(working_set);
 			ArrayList<Block> doc_blocks = new ArrayList<Block>(); 
 			Document document = this.corpus.get(i);
+
 			Set<String> types = new HashSet<String>();
 			types.add("Term");
 			types.add("MessageHeader");
+			
 			
 			for(Annotation annotation : getOrderedAnnotations(document.getAnnotations().get(types))){
 				if(annotation.getType().equals("MessageHeader"))
@@ -313,20 +316,10 @@ public class TermBlocks {
 	
 	/**
 	 * change the tfidf implementation
-	 * @param implementation
+	 * @param new_tfidf
 	 */
-	void setTfidf(String implementation){
-		switch(implementation){
-			case "Local":
-				this.tfidf = new LocalTfidf();
-			break;
-			case "ANC":
-				this.tfidf = new AncTfidf();
-			break;
-			default:
-				this.tfidf = new LocalTfidf();
-			break;
-		}
+	void setTfidf(Tfidf new_tfidf){
+		this.tfidf = new_tfidf;
 		if(this.corpus != null){
 			setCorpus(this.corpus);
 		}
