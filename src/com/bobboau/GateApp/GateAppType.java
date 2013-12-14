@@ -2,8 +2,9 @@ package com.bobboau.GateApp;
 import gate.util.GateException;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
-
+//import graph
 
 
 /**
@@ -78,6 +79,8 @@ public interface GateAppType
 		 * @param value 
 		 */
 		void string(String value);
+		void People(ArrayList<Vertex_people> people);
+		void Relations(ArrayList<edge_relation> relations);
 	}
 	
 	/**
@@ -96,6 +99,8 @@ public interface GateAppType
 	 * @param results contents of file
 	 */
 	public void getDocumentContent(int idx, ResultRetriever results);
+	public void getDocumentPeople(int idx, ResultRetriever results);
+	public void getDocumentRelations(int idx, ResultRetriever results);
 	
 	/**
 	 * @param idx

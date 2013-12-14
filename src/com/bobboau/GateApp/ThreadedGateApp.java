@@ -150,6 +150,45 @@ public class ThreadedGateApp implements GateAppType
 			e.printStackTrace();
 		}
 	}
+	@Override
+	public void getDocumentPeople(final int idx, final ResultRetriever results){
+		
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.getDocumentPeople(idx, results);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+	@Override
+	public void getDocumentRelations(final int idx, final ResultRetriever results){
+		
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.getDocumentRelations(idx, results);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
+	
 
 	/**
 	 * 

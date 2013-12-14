@@ -4,8 +4,11 @@
 package com.bobboau.GateApp;
 
 import gate.Corpus;
-import java.util.List;
+import gate.Document;
 
+import java.util.ArrayList;
+import java.util.List;
+//import graph.*;
 /**
  * @author bobboau
  *
@@ -44,4 +47,7 @@ public interface Tfidf {
 	 * @return the TF/IDF score of the term with respect to the given document
 	 */
 	public double getScore(String term, int doc_idx);
+	public ArrayList<Vertex_people> getpeoples(Document document);
+	public ArrayList<edge_relation> getRelations(Document document,Corpus corpus);
+	
 }

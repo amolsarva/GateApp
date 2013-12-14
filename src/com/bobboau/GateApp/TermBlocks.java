@@ -12,7 +12,7 @@ import gate.Annotation;
 import gate.AnnotationSet;
 import gate.Corpus;
 import gate.Document;
-
+//import graph.*;
 /**
  * @author Bobboau
  * finds blocks of terms and generates a score for them, basically this is the list of all possible extractions
@@ -42,6 +42,8 @@ public class TermBlocks {
 	 * the blocks
 	 */
 	private ArrayList<ArrayList<Block>> blocks = null;
+	private ArrayList<ArrayList<Vertex_people>> Peoples = null;
+	private ArrayList<ArrayList<edge_relation>> Relations = null;
 	
 	/**
 	 * block size
@@ -99,15 +101,22 @@ public class TermBlocks {
 			return;
 		}
 		blocks = new ArrayList<ArrayList<Block>>();
+		Peoples = new  ArrayList<ArrayList<Vertex_people>>();
+		Relations = new  ArrayList<ArrayList<edge_relation>>();
 		String[] working_set = new String[this.block_size];
 		for(int i = 0; i<corpus.size(); i++)
 		{
 			clearWorkingSet(working_set);
 			ArrayList<Block> doc_blocks = new ArrayList<Block>(); 
+			ArrayList<Vertex_people> doc_people = new ArrayList<Vertex_people>();
+			ArrayList<edge_relation> doc_relation = new ArrayList<edge_relation>();
+			
+			
 			Document document = corpus.get(i);
 			Set<String> types = new HashSet<String>();
 			types.add("Term");
 			types.add("MessageHeader");
+			
 			
 			for(Annotation annotation : getOrderedAnnotations(document.getAnnotations().get(types))){
 				if(annotation.getType().equals("MessageHeader"))
@@ -125,7 +134,11 @@ public class TermBlocks {
 					}
 				}
 			}
+			doc_people = this.tfidf.getpeoples(document);
+			doc_relation = this.tfidf.getRelations(document,this.corpus);
 			blocks.add(doc_blocks);
+			Peoples.add(doc_people);
+			Relations.add(doc_relation);
 		}
 	}
 	
@@ -225,5 +238,11 @@ public class TermBlocks {
 		if(this.corpus != null){
 			setCorpus(this.corpus);
 		}
+	}
+	public ArrayList<Vertex_people> get_people(int a){
+		return Peoples.get(a);
+	}
+	public ArrayList<edge_relation> get_relation(int a){
+		return Relations.get(a);
 	}
 }

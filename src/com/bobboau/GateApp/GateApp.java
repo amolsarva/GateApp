@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-
+//import graph.*;
 
 /**
  * @author Bobboau
@@ -255,7 +255,14 @@ public class GateApp implements GateAppType
 	public void getDocumentContent(int idx, ResultRetriever results){
 		results.string(this.corpus.get(idx).getContent().toString());
 	}
-	
+	@Override
+	public void getDocumentPeople(int idx, ResultRetriever results){
+		results.People(this.term_blocks.get_people(idx));
+	}
+	@Override
+	public void getDocumentRelations(int idx, ResultRetriever results){
+		results.Relations(this.term_blocks.get_relation(idx));
+	}
 	/**
 	 * @param idx
 	 */
@@ -268,7 +275,9 @@ public class GateApp implements GateAppType
 		
 		results.string(result);
 	}
-
+	
+	
+	
 	/**
 	 * set the block size
 	 */
