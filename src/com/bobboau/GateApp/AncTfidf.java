@@ -30,10 +30,9 @@ import java.util.TreeMap;
  *
  */
 public class AncTfidf implements Tfidf{
-	private Map<String, Double> term_frequency = new HashMap<String, Double>();
-	private boolean corp_freq_set = false;
+	private Map<String, Double> term_frequency = null;
 	private CorpusImpl corpus = null;
-	private Map<String,Double> tfidf = new TreeMap<String,Double>();
+	private Map<String,Double> tfidf = null;
 	/**
 	 * set a new corpus
 	 * @param corpus
@@ -50,6 +49,14 @@ public class AncTfidf implements Tfidf{
 	 * @return a list of  all terms
 	 */
 	public List<String> getTerms(){
+		if(corpus == null){
+			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
+			return null;
+		}
+		if(this.term_frequency == null){
+			corp_freq();
+		}
+		
 		List<String> allterms = new ArrayList<String>();
 		
 		for (int i = 0; i < corpus.size(); i++){
@@ -72,6 +79,15 @@ public class AncTfidf implements Tfidf{
 	 * @return a list of all terms in a given document
 	 */
 	public List<String> getTerms(int doc_idx){
+		if(corpus == null){
+			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
+			return null;
+		}
+		
+		if(this.term_frequency == null){
+			corp_freq();
+		}
+		
 
 		List<String> allterms = new ArrayList<String>();
 		
@@ -93,6 +109,8 @@ public class AncTfidf implements Tfidf{
 	 * @return sorted list of terms in a given document
 	 */
 	public List<String> getTermsOrdered(int doc_idx){
+		
+		
 		try {
 			setTermsMap(doc_idx);
 		} catch (IOException e) {
@@ -124,14 +142,24 @@ public class AncTfidf implements Tfidf{
 	 * @return the tfidf score of a given term in respect to a given document
 	 */
 	public double getScore(String term, int doc_idx){
+		if(this.corpus == null){
+			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
+			return (Double) null;
+		}
+		if(this.term_frequency == null){
+			corp_freq();
+		}
+		
+
 		try {
 			setTermsMap(doc_idx);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		return tfidf.get(term);
+
+		return this.tfidf.get(term);
+
 	}
 	
 	
@@ -181,17 +209,21 @@ public class AncTfidf implements Tfidf{
 	 * in the tfidf data structure
 	 */
 	private void setTermsMap(int doc_idx) throws IOException{
-		if(!corp_freq_set){
-			corp_freq_set = true;
+		if(corpus == null){
+			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
+			return;
+		}
+		if(this.term_frequency == null){
 			corp_freq();
 		}
 
 		String most_common = "08798757650874208764200065";
 		double max_freq = -1; 
 
-		double doc_num = 22164985; // total number of documents
+		double unique_terms = 239208;
+		double words_counted = 22164985; // total number of documents
 		Map<String, Double> term_frequency = new HashMap<String, Double>(); // number of times the term occurs in the document
-		Map<String, Double> doc_frequency = this.term_frequency; // number of documents the term occurs in 
+		
 
 
 
@@ -206,28 +238,51 @@ public class AncTfidf implements Tfidf{
 				val++;
 				term_frequency.remove(terms.get(i));
 				term_frequency.put(terms.get(i), val);
-
+				
 				if (val > max_freq){
 					max_freq = val;
 					most_common = terms.get(i);
 				}
 			}else{
 				term_frequency.put(terms.get(i),(double)1);
-				doc_num++;
-
+								
 				if (i==0) {
 					most_common = terms.get(i);
 					max_freq = 1;
 				}
 			}
+			
+			if(this.term_frequency.containsKey(terms.get(i))){
+				double val = term_frequency.get(terms.get(i));
+				val++;
+				this.term_frequency.remove(terms.get(i));
+				this.term_frequency.put(terms.get(i), val);
+				
+				words_counted++;
+				unique_terms++;
+				
+				if (val > max_freq){
+					max_freq = val;
+					most_common = terms.get(i);
+				}
+			}else{
+				this.term_frequency.put(terms.get(i),(double)1);
+				words_counted++;
+				
+			}
 
 
 		}
-
+		
+		
+		Map<String, Double> doc_frequency = this.term_frequency; // number of documents the term occurs in 
+		
+		
 		Map<String,Double> tfidf_temp = new TreeMap<String,Double>();
 		for (Map.Entry entry : term_frequency.entrySet()) { 
-			double tf = 0.5 + ((0.5 * term_frequency.get(entry.getKey())) / max_freq);
-			double idf = Math.log(doc_num/doc_frequency.get(entry.getKey())) / Math.log(10);
+			String current_string = (String) entry.getKey();
+			double tf = (term_frequency.get(current_string) / terms.size());
+			double idf = Math.log(words_counted/doc_frequency.get(current_string)) / Math.log(10);
 
 
 			//System.out.print("tf-idf" + tf*idf);
