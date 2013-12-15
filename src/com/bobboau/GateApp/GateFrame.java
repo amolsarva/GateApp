@@ -23,9 +23,12 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -676,19 +679,41 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		
 
     	
-    }  
+    }
+	
+	JFrame graph_frame = null;
 	
 	/**
 	 * 
 	 */
 	public void Generate_graph(){
+		Point location = null;
+		Dimension size = new Dimension(200,200);
+		if(this.graph_frame != null){
+			//if there is an old window, close it
+			location = this.graph_frame.getLocation();
+			size = this.graph_frame.getSize();
+			this.graph_frame.dispatchEvent(new WindowEvent(this.graph_frame, WindowEvent.WINDOW_CLOSING));
+		}
 		JPanel controls = new JPanel();
 		GraphZoomScrollPane panel = null;
 		JPanel JSP = new JPanel();
 		
-		JFrame frame1 = new JFrame();
+		this.graph_frame = new JFrame();
+		if(location != null){
+			this.graph_frame.setLocation(location);
+		}
+		this.graph_frame.addWindowListener( new WindowAdapter()
+		{
+			public void windowClosing(WindowEvent e)
+			{
+				//if the window is manually closed forget our reference to it
+				GateFrame.this.graph_frame = null;
+			}
+		});
+
 		JSplitPane mid_elements = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		frame1.setSize(200, 200);
+		this.graph_frame.setSize(size);
 		graph_visualizer abc = get_graph();	
 		if (abc!= null){
 
@@ -720,9 +745,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
       mid_elements.add(JSP);
       mid_elements.add(new JScrollPane(controls));
 //      frame1.setDefaultCloseOperation(frame1.EXIT_ON_CLOSE);
-      frame1.add(mid_elements);
-	  frame1.pack();
-	  frame1.setVisible(true);
+      this.graph_frame.add(mid_elements);
+	  this.graph_frame.pack();
+	  this.graph_frame.setVisible(true);
 		
 	}
 

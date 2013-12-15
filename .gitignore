@@ -2,3 +2,4 @@ classes/
 bin/
 GateApp.conf
 .classpath
+.DS_Store
