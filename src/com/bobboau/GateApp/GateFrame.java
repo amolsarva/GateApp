@@ -23,6 +23,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -686,8 +687,12 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * 
 	 */
 	public void Generate_graph(){
+		Point location = null;
+		Dimension size = new Dimension(200,200);
 		if(this.graph_frame != null){
 			//if there is an old window, close it
+			location = this.graph_frame.getLocation();
+			size = this.graph_frame.getSize();
 			this.graph_frame.dispatchEvent(new WindowEvent(this.graph_frame, WindowEvent.WINDOW_CLOSING));
 		}
 		JPanel controls = new JPanel();
@@ -695,6 +700,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		JPanel JSP = new JPanel();
 		
 		this.graph_frame = new JFrame();
+		if(location != null){
+			this.graph_frame.setLocation(location);
+		}
 		this.graph_frame.addWindowListener( new WindowAdapter()
 		{
 			public void windowClosing(WindowEvent e)
@@ -705,7 +713,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		});
 
 		JSplitPane mid_elements = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		this.graph_frame.setSize(200, 200);
+		this.graph_frame.setSize(size);
 		graph_visualizer abc = get_graph();	
 		if (abc!= null){
 
