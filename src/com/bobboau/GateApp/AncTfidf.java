@@ -33,6 +33,9 @@ public class AncTfidf implements Tfidf{
 	private Map<String, Double> term_frequency = null;
 	private CorpusImpl corpus = null;
 	private Map<String,Double> tfidf = null;
+	double unique_terms = 239208;
+	double words_counted = 22164985;
+	
 	/**
 	 * set a new corpus
 	 * @param corpus
@@ -154,11 +157,44 @@ public class AncTfidf implements Tfidf{
 		try {
 			setTermsMap(doc_idx);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("TFIDF map never set");
 			e.printStackTrace();
 		}
-
-		return this.tfidf.get(term);
+		/*
+		Boolean flag = false;
+		ArrayList<String> terms = (ArrayList<String>) getTerms(doc_idx);
+		for (int i =0; i<terms.size(); i++){
+			if (terms.get(i).equals(term)){
+				flag = true;
+			}
+		}*/
+		
+		/*
+		try{
+			return this.tfidf.get(term);
+		}
+		catch (NullPointerException f){
+			if(!flag){
+				System.out.println("DOESN'T EXIST DOESN'T EXIST DOESN'T EXIST");
+				System.out.println("The term causing the crash is: " + term);
+			}
+		}*/
+		
+		ArrayList<String> terms = (ArrayList<String>) getTerms(doc_idx);
+		
+		if(this.tfidf.containsKey(term)){
+			return this.tfidf.get(term);
+		}else{
+			term_frequency.put(term,1.0);
+			words_counted++;
+			unique_terms++;
+			
+			double tf = 1.0 / ((double) terms.size());
+			double ittf = Math.log10(words_counted / 1.0);
+			return (tf*ittf);
+		}
+		
+		
 
 	}
 	
@@ -217,11 +253,7 @@ public class AncTfidf implements Tfidf{
 			corp_freq();
 		}
 
-		String most_common = "08798757650874208764200065";
-		double max_freq = -1; 
-
-		double unique_terms = 239208;
-		double words_counted = 22164985; // total number of documents
+		 // total number of documents
 		Map<String, Double> term_frequency = new HashMap<String, Double>(); // number of times the term occurs in the document
 		
 
@@ -239,32 +271,21 @@ public class AncTfidf implements Tfidf{
 				term_frequency.remove(terms.get(i));
 				term_frequency.put(terms.get(i), val);
 				
-				if (val > max_freq){
-					max_freq = val;
-					most_common = terms.get(i);
-				}
+			
 			}else{
 				term_frequency.put(terms.get(i),(double)1);
 								
-				if (i==0) {
-					most_common = terms.get(i);
-					max_freq = 1;
-				}
 			}
 			
 			if(this.term_frequency.containsKey(terms.get(i))){
-				double val = term_frequency.get(terms.get(i));
-				val++;
+				double val2 = term_frequency.get(terms.get(i));
+				val2++;
 				this.term_frequency.remove(terms.get(i));
-				this.term_frequency.put(terms.get(i), val);
+				this.term_frequency.put(terms.get(i), val2);
 				
 				words_counted++;
 				unique_terms++;
 				
-				if (val > max_freq){
-					max_freq = val;
-					most_common = terms.get(i);
-				}
 			}else{
 				this.term_frequency.put(terms.get(i),(double)1);
 				words_counted++;
@@ -275,21 +296,19 @@ public class AncTfidf implements Tfidf{
 		}
 		
 		
-		Map<String, Double> doc_frequency = this.term_frequency; // number of documents the term occurs in 
-		
 		
 		Map<String,Double> tfidf_temp = new TreeMap<String,Double>();
 		for (Map.Entry entry : term_frequency.entrySet()) { 
 			String current_string = (String) entry.getKey();
 			double tf = (term_frequency.get(current_string) / terms.size());
-			double idf = Math.log(words_counted/doc_frequency.get(current_string)) / Math.log(10);
-
+			double idf = Math.log10(words_counted/this.term_frequency.get(current_string)) ;
+			double tf_ittf = tf*idf;
 
 			//System.out.print("tf-idf" + tf*idf);
 
 			//System.out.println("key,val: " + entry.getKey() + "," + entry.getValue()); 
 
-			tfidf_temp.put((String) entry.getKey(), tf*idf);
+			tfidf_temp.put(current_string, tf_ittf);
 
 		}
 
