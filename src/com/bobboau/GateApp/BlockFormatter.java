@@ -24,9 +24,10 @@ public class BlockFormatter
 	 * class that represents a section of text in a document
 	 * @author Bobboau
 	 */
-	private class Blob {
-		public long start;
-		public long end;
+	public static class Blob {
+		private long start;
+		private long end;
+		private String author;
 	}
 
 	/**
@@ -36,32 +37,52 @@ public class BlockFormatter
 	 * @param term_blocks the block generator, the source of the blocks to format
 	 * @return a list of strings extracted from the document that should be reasonable summarizations
 	 */
-	public List<String> getBlocksAsStrings(int idx, int merge_threshold, TermBlocks term_blocks) {
+	public List<Blob> getBlocks(int idx, int merge_threshold, TermBlocks term_blocks) {
 		
-		ArrayList<Block> doc_blocks = getScoreSortedBlocks(idx, term_blocks);
+		List<Block> doc_blocks = getScoreSortedBlocks(idx, term_blocks);
 		
-		ArrayList<Blob> blobs = mergeLocalText(merge_threshold, doc_blocks);
+		List<Blob> blobs = mergeLocalText(merge_threshold, doc_blocks);
 		
-		return blobsToStrings(idx, blobs, term_blocks);
+		return blobs;
+	}
+	
+	/**
+	 * sorts a bunch of blobs in document order
+	 * @param blobs blobs to be sorted
+	 */
+	public static void documentOrderSort(List<Blob>blobs){
+		Collections.sort(blobs, new Comparator<Blob>(){
+			@Override
+			public int compare(Blob a, Blob b) {
+				double diff = a.start - b.start;
+				if(diff == 0.0){
+					return 0;
+				}
+				return diff > 0.0 ? 1 : -1;
+			}
+		});	
 	}
 
 	/**
 	 * given a bunch of blobs and a document return a bunch of strings from that document
 	 * @param document_idx
 	 * @param blobs
-	 * @return
+	 * @param term_blocks the original source of the blocks
+	 * @return blobs transformed into strings
 	 */
-	private static List<String> blobsToStrings(int document_idx, ArrayList<Blob> blobs, TermBlocks term_blocks)
+	public static List<String> blobsToStrings(int document_idx, List<Blob> blobs, TermBlocks term_blocks)
 	{
-		ArrayList<String> ret = new ArrayList<String>();
+		List<String> ret = new ArrayList<String>();
 		for(Blob blob : blobs){
 			try
 			{
 				ret.add(
+					blob.author+ " said: \n\"..." +
 					term_blocks.getCorpus().get(document_idx).getContent().getContent(
 						new Long(blob.start),
 						new Long(blob.end)
 					).toString().replaceAll("[\\r\\n\\s]+", "  ")
+					+"...\""
 				);
 			}
 			catch (InvalidOffsetException e)
@@ -76,14 +97,15 @@ public class BlockFormatter
 	 * given a bunch of blocks make a bunch of blobs that don't have any overlapping text near by (defined by merge threshold)
 	 * @param merge_threshold
 	 * @param doc_blocks
-	 * @return
+	 * @return a bunch of text blobs
 	 */
-	private ArrayList<Blob> mergeLocalText(int merge_threshold, ArrayList<Block> doc_blocks)
+	public static List<Blob> mergeLocalText(int merge_threshold, List<Block> doc_blocks)
 	{
 		//convert blocks to blobs
-		ArrayList<Blob> blobs = new ArrayList<Blob>();
+		List<Blob> blobs = new ArrayList<Blob>();
 		for(Block block : doc_blocks){
 			Blob new_blob = new Blob();
+			new_blob.author = block.getAuthor();
 			new_blob.start = block.getDocumentStart();
 			new_blob.end = block.getDocumentStop();
 			blobs.add(new_blob);
@@ -105,7 +127,7 @@ public class BlockFormatter
 	 * @param merge_threshold
 	 * @return
 	 */
-	private static boolean mergeOverlappingBlobs(ArrayList<Blob> blobs, int merge_threshold)
+	private static boolean mergeOverlappingBlobs(List<Blob> blobs, int merge_threshold)
 	{
 		boolean merged = false;
 		for(int i = 0; i<blobs.size(); i++){
@@ -137,11 +159,11 @@ public class BlockFormatter
 	 * get a list of blocks ordered by score
 	 * @param idx
 	 * @param term_blocks 
-	 * @return
+	 * @return the blocks in score order
 	 */
-	private static ArrayList<Block> getScoreSortedBlocks(int idx, TermBlocks term_blocks)
+	public static List<Block> getScoreSortedBlocks(int idx, TermBlocks term_blocks)
 	{
-		ArrayList<Block> doc_blocks = new ArrayList<Block>();
+		List<Block> doc_blocks = new ArrayList<Block>();
 		
 		for(Block block : term_blocks.getBlocks(idx)){
 			doc_blocks.add(block);

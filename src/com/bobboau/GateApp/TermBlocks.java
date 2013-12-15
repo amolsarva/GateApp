@@ -38,13 +38,20 @@ public class TermBlocks {
 		private double score;
 		
 		/**
-		 * @param values
-		 * @param score
+		 * who wrote this block
 		 */
-		public Block(Annotation[] values, double score){
+		private String author;
+		
+		/**
+		 * @param values the terms
+		 * @param score the cumulative score of the terms
+		 * @param author who wrote this block
+		 */
+		public Block(Annotation[] values, double score, String author){
 			this.values = new Annotation[TermBlocks.this.block_size];
 			System.arraycopy(values, 0, this.values, 0, TermBlocks.this.block_size);
 			this.score = score;
+			this.author = author;
 		}
 		
 		/**
@@ -76,8 +83,16 @@ public class TermBlocks {
 		 * 
 		 * @return the score of this block
 		 */
-		double getScore(){
+		public double getScore(){
 			return this.score;
+		}
+		
+		/**
+		 * 
+		 * @return the name of the person who wrote this block
+		 */
+		public String getAuthor(){
+			return this.author;
 		}
 	}
 	
@@ -164,12 +179,16 @@ public class TermBlocks {
 			types.add("Term");
 			types.add("MessageHeader");
 			
-			
+			String author = "";
 			for(Annotation annotation : getOrderedAnnotations(document.getAnnotations().get(types))){
 				if(annotation.getType().equals("MessageHeader"))
 				{
 					if(!workingSetIsReady(working_set)){
-						doc_blocks.add(new Block(working_set, workingSetScore(working_set, i)));
+						doc_blocks.add(new Block(working_set, workingSetScore(working_set, i), author));
+					}
+					author = annotation.getFeatures().get("sender_name").toString().replaceAll("[\\r\\n\\s]+", "");
+					if(author.equals("")){
+						author = annotation.getFeatures().get("sender_email").toString().replaceAll("[\\r\\n\\s<>]+", "");
 					}
 					clearWorkingSet(working_set);
 				}
@@ -177,7 +196,7 @@ public class TermBlocks {
 				{
 					pushWorkingSet(working_set, annotation);
 					if(workingSetIsReady(working_set)){
-						doc_blocks.add(new Block(working_set, workingSetScore(working_set, i)));
+						doc_blocks.add(new Block(working_set, workingSetScore(working_set, i), author));
 					}
 				}
 			}

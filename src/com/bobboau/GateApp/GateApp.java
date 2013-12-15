@@ -28,6 +28,9 @@ import java.net.URL;
 import java.util.*;
 //import graph.*;
 
+import com.bobboau.GateApp.BlockFormatter.Blob;
+import com.bobboau.GateApp.TermBlocks.Block;
+
 /**
  * @author Bobboau
  *
@@ -58,11 +61,6 @@ public class GateApp implements GateAppType
 	 * calculates blocks of high TF/IDF
 	 */
 	private TermBlocks term_blocks = new TermBlocks();
-	
-	/**
-	 * utility functions for displaying term blocks
-	 */
-	private BlockFormatter block_formatter = new BlockFormatter();
 	
 	/**
 	 * TermBlocks is not the apropriate place to extract people
@@ -283,11 +281,27 @@ public class GateApp implements GateAppType
 	 * @param idx
 	 */
 	@Override
-	public void getDocumentSubject(int idx, ResultRetriever results){
+	public void getDocumentSubject(int idx, ResultRetriever<String> results){
 		
-		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-		List<String> terms = this.block_formatter.getBlocksAsStrings(idx, 5, this.term_blocks);
-		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \ntop five term blocks are \n\""+terms.get(0)+"\"\n\""+terms.get(1)+"\"\n\""+terms.get(2)+"\"\n\""+terms.get(3)+"\"\n\""+terms.get(4);
+		int number_to_show = 5;
+		
+		List<Block> doc_blocks = BlockFormatter.getScoreSortedBlocks(idx, this.term_blocks);
+		List<Blob> blobs = BlockFormatter.mergeLocalText(number_to_show, doc_blocks);
+
+		blobs = blobs.subList(0, number_to_show);
+		
+		BlockFormatter.documentOrderSort(blobs);
+		
+		List<String> terms = BlockFormatter.blobsToStrings(idx, blobs, this.term_blocks);
+		
+		String result = "email thread: "+this.corpus.get(idx).getName()+":\n\n";
+
+		for(int i = 0; i<number_to_show; i++){
+			result+=terms.get(i);
+			if(i+1<number_to_show){
+				result+="\n...\n";
+			}
+		}
 		
 		results.value(result);
 	}

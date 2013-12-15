@@ -10,7 +10,10 @@ Rule: file_size
 
 
 Rule: date
-({Token.kind == number}{Token.string == "/"}{Token.kind == number}{Token.string == "/"}{Token.kind == number}):date
+(
+	{Token.kind == number}{Token.string == "/"}{Token.kind == number}{Token.string == "/"}{Token.kind == number}
+	(({SpaceToken.kind != control})+{Token.kind == number}{Token.string == ":"}{Token.kind == number}({Token.string == ":"}{Token.kind == number})? ({Token.string ==~ "AM|PM|am|pm"})? )?
+):date
 -->
 :date.Date = {rule = "date"}
 

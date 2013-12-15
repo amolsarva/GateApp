@@ -6,10 +6,11 @@ Options: control = appelt
 Rule: page_break
 (
 	{SpaceToken.kind==control}
-	{Date}{SpaceToken}
-	{Token.string == "Gmail"}{SpaceToken}{Token.string == "-"}{SpaceToken}
+	{Date}({SpaceToken})?
+	{Token.string ==~ "Gmail|PMGmail|AMGmail"}{SpaceToken}{Token.string == "-"}{SpaceToken}   ///sometimes the date gets merged with the gmail token
 	({Token}|{SpaceToken.kind!=control})*
 	{SpaceToken.kind==control}
+	({Token.string == "Page"}({SpaceToken})*{Token.kind == number}({SpaceToken})*{Token.string == "of"}({SpaceToken})*{Token.kind == number}({SpaceToken})*)?
 	{Token.string == "https"}({Token}|{SpaceToken.kind!=control})+
 	{SpaceToken.kind==control}
 ):break
