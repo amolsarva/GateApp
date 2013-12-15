@@ -621,7 +621,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 			
 			
 			
-			graph_visualizer abc = new graph_visualizer(Peoples,relation,relation.size());
+			graph_visualizer abc = new graph_visualizer((ArrayList)Peoples,(ArrayList)relation,relation.size());
 			abc.vv.setName("1");
 			return abc;
 			}else{
