@@ -25,14 +25,32 @@ public class TermBlocks {
 	 * @author Bobboau
 	 *
 	 */
-	private class Block{
-		Block(Annotation[] values, double score){
+	public class Block{
+		
+		/**
+		 * the annotations that make up this block
+		 */
+		private Annotation[] values;
+		
+		/**
+		 * the cumulative score of the annotations
+		 */
+		private double score;
+		
+		/**
+		 * @param values
+		 * @param score
+		 */
+		public Block(Annotation[] values, double score){
 			this.values = new Annotation[TermBlocks.this.block_size];
 			System.arraycopy(values, 0, this.values, 0, TermBlocks.this.block_size);
 			this.score = score;
 		}
-		Annotation[] values;
-		long getDocumentStart(){
+		
+		/**
+		 * @return position in the document this block starts
+		 */
+		public long getDocumentStart(){
 			for(int i = 0; i < TermBlocks.this.block_size; i++){
 				if(this.values[i] != null){
 					return this.values[i].getStartNode().getOffset().longValue();
@@ -41,7 +59,11 @@ public class TermBlocks {
 			return 0L;
 			
 		}
-		long getDocumentStop(){
+		
+		/**
+		 * @return position in the document this block stops
+		 */
+		public long getDocumentStop(){
 			for(int i = TermBlocks.this.block_size-1; i>-1; i--){
 				if(this.values[i] != null){
 					return this.values[i].getEndNode().getOffset().longValue();
@@ -49,16 +71,14 @@ public class TermBlocks {
 			}
 			return 0L;
 		}
-		double score;
-	}
-	
-	/**
-	 * class that represents a section of text in a document
-	 * @author Bobboau
-	 */
-	private class Blob {
-		public long start;
-		public long end;
+		
+		/**
+		 * 
+		 * @return the score of this block
+		 */
+		double getScore(){
+			return this.score;
+		}
 	}
 	
 	/**
@@ -205,114 +225,6 @@ public class TermBlocks {
 		}
 		ws[this.block_size - 1] = value;
 	}
-
-	/**
-	 * returns a list of strings ordered from greatest to least score
-	 * @param idx the document to get blocks for
-	 * @param merge_threshold if two blocks are within this ordinal distance and overlap, merge them into the higher position
-	 * @return a list of strings extracted from the document that should be reasonable summarizations
-	 */
-	public List<String> getBlocksAsStrings(int idx, int merge_threshold) {
-		if(this.block_size < 1 || this.corpus == null){
-			return new ArrayList<String>();
-		}
-		
-		ArrayList<Block> doc_blocks = getSortedBlocks(idx);
-		
-		ArrayList<Blob> blobs = mergeLocalText(merge_threshold, doc_blocks);
-		
-		return blobsToStrings(idx, blobs);
-	}
-
-	/**
-	 * given a bunch of blobs and a document return a bunch of strings from that document
-	 * @param document_idx
-	 * @param blobs
-	 * @return
-	 */
-	private List<String> blobsToStrings(int document_idx, ArrayList<Blob> blobs)
-	{
-		ArrayList<String> ret = new ArrayList<String>();
-		for(Blob blob : blobs){
-			try
-			{
-				ret.add(
-					this.corpus.get(document_idx).getContent().getContent(
-						new Long(blob.start),
-						new Long(blob.end)
-					).toString().replaceAll("[\\r\\n\\s]+", "  ")
-				);
-			}
-			catch (InvalidOffsetException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		return ret;
-	}
-
-	/**
-	 * given a bunch of blocks make a bunch of blobs that don't have any overlapping text near by (defined by merge threshold)
-	 * @param merge_threshold
-	 * @param doc_blocks
-	 * @return
-	 */
-	private ArrayList<Blob> mergeLocalText(int merge_threshold, ArrayList<Block> doc_blocks)
-	{
-		ArrayList<Blob> blobs = new ArrayList<Blob>();
-		
-		//merge near by overlaps
-		outter : for(Block block : doc_blocks){
-			for(int j = 0; j<merge_threshold; j++){
-				if(blobs.size() - 1 - j > -1){
-					Blob old_blob = blobs.get(blobs.size() - 1 - j);
-					//if this block overlaps an existing blob within threshold distance merge this block into that blob
-					if(
-						block.getDocumentStart() > old_blob.start && block.getDocumentStart() < old_blob.end
-						||
-						block.getDocumentStop() > old_blob.start && block.getDocumentStop() < old_blob.end
-					){
-						old_blob.start = Math.min(old_blob.start, block.getDocumentStart());
-						old_blob.end = Math.min(old_blob.end, block.getDocumentStop());
-						continue outter;
-					}
-				}
-			}
-			
-			//if no overlaps were found just add the block as a new blob
-			Blob new_blob = new Blob();
-			new_blob.start = block.getDocumentStart();
-			new_blob.end = block.getDocumentStop();
-			blobs.add(new_blob);
-		}
-		return blobs;
-	}
-
-	/**
-	 * get a list of blocks ordered by score
-	 * @param idx
-	 * @return
-	 */
-	private ArrayList<Block> getSortedBlocks(int idx)
-	{
-		ArrayList<Block> doc_blocks = new ArrayList<Block>();
-		
-		for(Block block : this.blocks.get(idx)){
-			doc_blocks.add(block);
-		}
-		
-		Collections.sort(doc_blocks, new Comparator<Block>(){
-			@Override
-			public int compare(Block a, Block b) {
-				double diff = a.score - b.score;
-				if(diff == 0.0){
-					return 0;
-				}
-				return diff < 0.0 ? 1 : -1;
-			}
-		});
-		return doc_blocks;
-	}
 	
 	/**
 	 * change the tfidf implementation
@@ -323,5 +235,23 @@ public class TermBlocks {
 		if(this.corpus != null){
 			setCorpus(this.corpus);
 		}
+	}
+
+	/**
+	 * get the blocks for the passed document
+	 * @param idx
+	 * @return all of the blocks for the passed document in no particular order
+	 */
+	public List<Block> getBlocks(int idx)
+	{
+		return this.blocks.get(idx);
+	}
+
+	/**
+	 * @return get theset corpus
+	 */
+	public Corpus getCorpus()
+	{
+		return this.corpus;
 	}
 }

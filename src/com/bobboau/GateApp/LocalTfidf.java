@@ -29,6 +29,7 @@ import gate.corpora.RepositioningInfo;
  * @author bobboau
  * this is a TFIDF calculator the works only with the corpus at hand
  */
+@SuppressWarnings("boxing")
 public class LocalTfidf implements Tfidf {
 	
 	/**
@@ -49,8 +50,8 @@ public class LocalTfidf implements Tfidf {
 	 */
 	public void setCorpus(Corpus corpus){
 		
-		document_counts = new HashMap<String,Integer>();
-		term_counts = new ArrayList<HashMap<String,Integer>>();
+		this.document_counts = new HashMap<String,Integer>();
+		this.term_counts = new ArrayList<HashMap<String,Integer>>();
 		
 		for(Document document : corpus)
 		{
@@ -67,13 +68,13 @@ public class LocalTfidf implements Tfidf {
 					term_count.put(term_string, 1);
 				}
 			}
-			term_counts.add(term_count);
+			this.term_counts.add(term_count);
 			for(String term : term_count.keySet()){
-				if(document_counts.containsKey(term)){
-					document_counts.put(term, document_counts.get(term)+1);
+				if(this.document_counts.containsKey(term)){
+					this.document_counts.put(term, this.document_counts.get(term)+1);
 				}
 				else{
-					document_counts.put(term, 1);
+					this.document_counts.put(term, 1);
 				}
 			}
 		}
@@ -84,7 +85,7 @@ public class LocalTfidf implements Tfidf {
 	 * @return a list of all terms in all documents
 	 */
 	public List<String> getTerms(){
-		return new ArrayList<String>(document_counts.keySet());
+		return new ArrayList<String>(this.document_counts.keySet());
 	}
 
 	/**
@@ -93,7 +94,7 @@ public class LocalTfidf implements Tfidf {
 	 * @return a list of all terms in a given document
 	 */
 	public List<String> getTerms(int doc_idx){
-		return new ArrayList<String>(term_counts.get(doc_idx).keySet());
+		return new ArrayList<String>(this.term_counts.get(doc_idx).keySet());
 	}
 
 	/**
@@ -110,10 +111,7 @@ public class LocalTfidf implements Tfidf {
 				if(diff == 0.0){
 					return 0;
 				}
-				else
-				{
-					return diff < 0.0 ? 1 : -1;
-				}
+				return diff < 0.0 ? 1 : -1;
 			}
 		});
 		return terms;
@@ -125,12 +123,18 @@ public class LocalTfidf implements Tfidf {
 	 * @param doc_idx which document we want the score calculated with respect to
 	 * @return the TF/IDF score of the term with respect to the given document
 	 */
+	
 	public double getScore(String term, int doc_idx){
 		term = term.toString().toLowerCase().replaceAll("[^A-Za-z0-9]", "");
 		try{
-			double idf = ((double)term_counts.size())/((double)document_counts.get(term));
-			double tf = ((double)term_counts.get(doc_idx).get(term))/((double)term_counts.get(doc_idx).size());
-			return tf*Math.log10(idf);
+			double idf = ((double)this.term_counts.size())/((double)this.document_counts.get(term));
+			double tf = ((double)this.term_counts.get(doc_idx).get(term))/((double)this.term_counts.get(doc_idx).size());
+			double score = tf*Math.log10(idf);
+			if(this.document_counts.get(term) == 1 && this.term_counts.get(doc_idx).get(term) == 1){
+				//if this term shows up one time in one document, it is probably a misspelling or slang, in any event it will probably be overly weighted
+				return score/2;
+			}
+			return score;
 		}
 		catch(IndexOutOfBoundsException e){
 			return 0.0;

@@ -60,6 +60,11 @@ public class GateApp implements GateAppType
 	private TermBlocks term_blocks = new TermBlocks();
 	
 	/**
+	 * utility functions for displaying term blocks
+	 */
+	private BlockFormatter block_formatter = new BlockFormatter();
+	
+	/**
 	 * TermBlocks is not the apropriate place to extract people
 	 */
 	PersonExtractor person_extractor = new PersonExtractor();
@@ -94,6 +99,7 @@ public class GateApp implements GateAppType
 			Gate.getCreoleRegister().registerDirectories(new File(System.getProperty("user.dir")).toURI().toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), ANNIEConstants.PLUGIN_DIR).toURI().toURL());
 			Gate.getCreoleRegister().registerDirectories(new File(Gate.getPluginsHome(), "Tools").toURI().toURL());
+			Gate.getCreoleRegister().registerComponent(FooterFinderPR.class);
 		
 			this.base_pipeline = new AnniePipeline();
 			this.base_pipeline.addProgressListener(new ProgressListener(){
@@ -280,7 +286,7 @@ public class GateApp implements GateAppType
 	public void getDocumentSubject(int idx, ResultRetriever results){
 		
 		AnnotationSet annotations = this.corpus.get(idx).getAnnotations().get("Term");
-		List<String> terms = this.term_blocks.getBlocksAsStrings(idx, 5);
+		List<String> terms = this.block_formatter.getBlocksAsStrings(idx, 5, this.term_blocks);
 		String result = this.corpus.get(idx).getName()+" has:\n"+annotations.size()+" Terms. \ntop five term blocks are \n\""+terms.get(0)+"\"\n\""+terms.get(1)+"\"\n\""+terms.get(2)+"\"\n\""+terms.get(3)+"\"\n\""+terms.get(4);
 		
 		results.value(result);
