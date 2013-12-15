@@ -260,6 +260,7 @@ private void set_group_relation(ArrayList<edge_relation> EP){
     /**
      * create edges for this demo graph
      * @param v an array of Vertices to connect
+     * @return -
      */
     public Number[] createEdges(Integer[] v) {
     	Number[] edge_num = new Number[ Total_Link+1];

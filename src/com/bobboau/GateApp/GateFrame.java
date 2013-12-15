@@ -233,10 +233,15 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		});
 		
 		this.document_list.addListSelectionListener(new ListSelectionListener(){
+			private int old_document = -1;
 			@Override
 			public void valueChanged(ListSelectionEvent event)
 			{
-				GateFrame.this.onSelectedDocumentChanged(GateFrame.this.document_list.getSelectedIndex());
+				int new_document = GateFrame.this.document_list.getSelectedIndex();
+				if(this.old_document != new_document){
+					GateFrame.this.onSelectedDocumentChanged(GateFrame.this.document_list.getSelectedIndex());
+					this.old_document = new_document;
+				}
 			}
 		});
 		
@@ -486,9 +491,9 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * have the user change the block size
 	 */
 	void onChangeBlockSize(){
-		String new_size = JOptionPane.showInputDialog(this, "Enter new block size", the_app.getBlockSize());
+		String new_size = JOptionPane.showInputDialog(this, "Enter new block size", this.the_app.getBlockSize());
 		try{
-			the_app.setBlockSize(Integer.parseInt(new_size));
+			this.the_app.setBlockSize(Integer.parseInt(new_size));
 		}
 		catch(Exception e){
 			//parse error, do nothing
@@ -597,23 +602,23 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	// set visulization part of the graph
 	public graph_visualizer get_graph()
     {	
-		if (!relation.isEmpty()){
-		Peoples.removeAll(Peoples);
-			for(int i = 0 ;i<relation.size(); i++){		
+		if (!this.relation.isEmpty()){
+		this.Peoples.removeAll(this.Peoples);
+			for(int i = 0 ;i<this.relation.size(); i++){		
 				edge_relation Private_relation =null;
-				Private_relation = relation.get(i);
+				Private_relation = this.relation.get(i);
 				String people1 = Private_relation.get_First();
 				String people2 = Private_relation.get_Second();
 				Vertex_people new_comer = new Vertex_people(people1);
-				if(!Peoples.contains(new_comer))
+				if(!this.Peoples.contains(new_comer))
 				{
-					Peoples.add(new_comer);
+					this.Peoples.add(new_comer);
 				}
 				
 				Vertex_people new_comer2 = new Vertex_people(people2);
-				if(!Peoples.contains(new_comer2))
+				if(!this.Peoples.contains(new_comer2))
 				{
-					Peoples.add(new_comer2);
+					this.Peoples.add(new_comer2);
 				}
 				
 			}
@@ -621,7 +626,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 			
 			
 			
-			graph_visualizer abc = new graph_visualizer((ArrayList)Peoples,(ArrayList)relation,relation.size());
+			graph_visualizer abc = new graph_visualizer((ArrayList)this.Peoples,(ArrayList)this.relation,this.relation.size());
 			abc.vv.setName("1");
 			return abc;
 			}else{
@@ -687,22 +692,22 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 		graph_visualizer abc = get_graph();	
 		if (abc!= null){
 
-		vv = abc.vv;
-		panel = new GraphZoomScrollPane(vv);
+		this.vv = abc.vv;
+		panel = new GraphZoomScrollPane(this.vv);
 		ModalGraphMouse gm = new DefaultModalGraphMouse<Integer,Number>();
-    	vv.setGraphMouse(gm);
+    	this.vv.setGraphMouse(gm);
     	JButton plus = new JButton("+");
     	plus.addActionListener(new ActionListener() {
     	public void actionPerformed(ActionEvent e) {
     		ScalingControl scaler = new CrossoverScalingControl();
-             scaler.scale(vv, 1.1f, vv.getCenter());
+             scaler.scale(GateFrame.this.vv, 1.1f, GateFrame.this.vv.getCenter());
           }
       });
       JButton minus = new JButton("-");
       minus.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e) {
         	  ScalingControl scaler = new CrossoverScalingControl();
-              scaler.scale(vv, 1/1.1f, vv.getCenter());
+              scaler.scale(GateFrame.this.vv, 1/1.1f, GateFrame.this.vv.getCenter());
           }
       });				      
       
