@@ -63,7 +63,7 @@ public class GateApp implements GateAppType
 	private TermBlocks term_blocks = new TermBlocks();
 	
 	/**
-	 * TermBlocks is not the apropriate place to extract people
+	 * TermBlocks is not the appropriate place to extract people
 	 */
 	PersonExtractor person_extractor = new PersonExtractor();
 	
@@ -123,7 +123,7 @@ public class GateApp implements GateAppType
 				gate_listener.onGateInit();
 			}
 			
-			setTFIDF("Local");
+			setTFIDF(this.config.get("tfidf_implementation", "Local"));
 			
 			//load up what ever corpus we had last time, default to nothing
 			setCorpus(new URL(this.config.get("loaded_files", "")));
@@ -330,6 +330,7 @@ public class GateApp implements GateAppType
 	 */
 	@Override
 	public void setTFIDF(String implementation) {
+		this.config.set("tfidf_implementation", implementation);
 		Tfidf new_tfidf = Tfidf.factory.make(implementation);
 		this.term_blocks.setTfidf(new_tfidf);
 		this.person_extractor.setTfidf(new_tfidf);
