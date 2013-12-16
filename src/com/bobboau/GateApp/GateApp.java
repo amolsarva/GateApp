@@ -304,7 +304,7 @@ public class GateApp implements GateAppType
 		for(int i = 0; i<terms.size(); i++){
 			result+=terms.get(i);
 			if(i+1<terms.size()){
-				result+="\n...\n";
+				result+="\n\n";
 			}
 		}
 		
