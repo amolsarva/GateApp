@@ -25,7 +25,7 @@ Rule: message_header
 	
 	(
 		({SpaceToken.kind==control}|{Break})
-		{Token.string ==~ "Reply.."}{Token}{Token.string == ":"}({SpaceToken.kind!=control})*
+		{Token.string =~ "Reply"}{Token}{Token.string == ":"}({SpaceToken.kind!=control})*
 		{NamedEmail} ({Token.string == ","}({SpaceToken})* {NamedEmail})*
 	)?
 	
@@ -48,4 +48,3 @@ Rule: message_header
 ):header
 -->
 :header.MessageHeader = {rule = "message_header", sender_name=:from.NamedEmail.name, sender_email=:from.NamedEmail.email}
-

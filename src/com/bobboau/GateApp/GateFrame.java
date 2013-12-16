@@ -502,6 +502,19 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 			//parse error, do nothing
 		}
 	}
+	
+	/**
+	 * have the user change the block size
+	 */
+	void onChangeResultSize(){
+		String new_size = JOptionPane.showInputDialog(this, "Enter new result size", this.the_app.getResultSize());
+		try{
+			this.the_app.setResultSize(Integer.parseInt(new_size));
+		}
+		catch(Exception e){
+			//parse error, do nothing
+		}
+	}
 
 	/**
 	 * change the TF/IDF algorithm to the local implementation
@@ -568,6 +581,12 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 					onChangeBlockSize();
 				}});
 		
+		//change the number of returned results
+		addMenuItem(menu, new JMenuItem("Change Result Size",KeyEvent.VK_R), "Change result size", ActionEvent.CTRL_MASK,
+				new ActionListener(){public void actionPerformed(ActionEvent Event){
+					onChangeResultSize();
+				}});
+		
 		//change the size of the tfidf blocks
 		addMenuItem(menu, new JMenuItem("Use Local TF/IDF",KeyEvent.VK_L), "Local TF/IDF", ActionEvent.CTRL_MASK,
 				new ActionListener(){public void actionPerformed(ActionEvent Event){
@@ -575,7 +594,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 				}});
 		
 		//change the size of the tfidf blocks
-		addMenuItem(menu, new JMenuItem("Use ANC TF/IDF",KeyEvent.VK_L), "ANC TF/IDF", ActionEvent.CTRL_MASK,
+		addMenuItem(menu, new JMenuItem("Use ANC TF/IDF",KeyEvent.VK_A), "ANC TF/IDF", ActionEvent.CTRL_MASK,
 				new ActionListener(){public void actionPerformed(ActionEvent Event){
 					onUseAncTFIDF();
 				}});

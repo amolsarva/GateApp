@@ -132,4 +132,15 @@ public interface GateAppType
 	 * @param implementation
 	 */
 	public void setTFIDF(String implementation);
+
+	/**
+	 * @param size number of results to show
+	 */
+	void setResultSize(int size);
+
+	/**
+	 * 
+	 * @return number of results we will be showing
+	 */
+	int getResultSize();
 }

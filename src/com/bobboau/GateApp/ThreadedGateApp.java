@@ -271,4 +271,36 @@ public class ThreadedGateApp implements GateAppType
 		}
 	}
 
+	/**
+	 * sets the number of results to be shown
+	 */
+	@Override
+	public void setResultSize(final int size)
+	{
+		try
+		{
+			this.command_queue.put(new Runnable(){
+				@Override
+				public void run()
+				{
+					ThreadedGateApp.this.my_app.setResultSize(size);
+				}
+			});
+		}
+		catch (InterruptedException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * returns the number of results that will be shown
+	 * and same speech about concurrency as with getBlockSize
+	 */
+	@Override
+	public int getResultSize()
+	{
+		return ThreadedGateApp.this.my_app.getResultSize();
+	}
+
 }

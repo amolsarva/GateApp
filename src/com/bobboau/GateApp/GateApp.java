@@ -66,6 +66,11 @@ public class GateApp implements GateAppType
 	 * TermBlocks is not the appropriate place to extract people
 	 */
 	PersonExtractor person_extractor = new PersonExtractor();
+
+	/**
+	 * number of results we will be showing
+	 */
+	private int	result_size;
 	
 	/**
 	 * constructor, starts up the Gate application
@@ -125,10 +130,12 @@ public class GateApp implements GateAppType
 			
 			setTFIDF(this.config.get("tfidf_implementation", "Local"));
 			
+			this.term_blocks.setBlockSize(this.config.get("block_size", 5));
+			this.result_size = this.config.get("result_size", 5);
+
 			//load up what ever corpus we had last time, default to nothing
 			setCorpus(new URL(this.config.get("loaded_files", "")));
 			
-			this.term_blocks.setBlockSize(this.config.get("block_size", 5));
 		}
 		catch (IOException e)
 		{
@@ -282,13 +289,11 @@ public class GateApp implements GateAppType
 	 */
 	@Override
 	public void getDocumentSubject(int idx, ResultRetriever<String> results){
-		
-		int number_to_show = 5;
-		
-		List<Block> doc_blocks = BlockFormatter.getScoreSortedBlocks(idx, this.term_blocks);
-		List<Blob> blobs = BlockFormatter.mergeLocalText(number_to_show, doc_blocks);
 
-		blobs = blobs.subList(0, number_to_show);
+		List<Block> doc_blocks = BlockFormatter.getScoreSortedBlocks(idx, this.term_blocks);
+		List<Blob> blobs = BlockFormatter.mergeLocalText(this.result_size, doc_blocks);
+
+		blobs = blobs.subList(0, Math.min(this.result_size, blobs.size()));
 		
 		BlockFormatter.documentOrderSort(blobs);
 		
@@ -296,9 +301,9 @@ public class GateApp implements GateAppType
 		
 		String result = "email thread: "+this.corpus.get(idx).getName()+":\n\n";
 
-		for(int i = 0; i<number_to_show; i++){
+		for(int i = 0; i<terms.size(); i++){
 			result+=terms.get(i);
-			if(i+1<number_to_show){
+			if(i+1<terms.size()){
 				result+="\n...\n";
 			}
 		}
@@ -323,6 +328,25 @@ public class GateApp implements GateAppType
 	@Override
 	public int getBlockSize() {
 		return this.term_blocks.getBlockSize();
+	}
+	
+	
+	
+	/**
+	 * set the results count
+	 */
+	@Override
+	public void setResultSize(int size) {
+		this.result_size = size;
+		this.config.set("result_size", size);
+	}
+
+	/**
+	 * get the block size
+	 */
+	@Override
+	public int getResultSize() {
+		return this.result_size;
 	}
 
 	/**

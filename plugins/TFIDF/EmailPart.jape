@@ -7,8 +7,11 @@ Rule: named_email
 (
 	(
 		({Token.kind == symbol})?
-		({Token.string == "\""})?
-		{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		(
+			{Token.string == "\""}
+			|
+			{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		)
 		(
 			{Token.kind == word}
 			|
@@ -17,6 +20,8 @@ Rule: named_email
 			{Token.kind == punctuation, Token.string != ":"}
 			|
 			{SpaceToken.kind != control}
+			|
+			{Token.string == "."}
 		)[0,15]
 		({Token.string == "\""})?
 	):name
@@ -32,12 +37,16 @@ Rule: named_email
 
 /*these are allowed to have one line break*/
 Rule: named_email_in_list
+Priority: 20
 {Token.string == ","}({SpaceToken.kind != control})[0,2]
 (
 	(
 		({Token.kind == symbol})?
-		({Token.string == "\""})?
-		{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		(
+			{Token.string == "\""}
+			|
+			{Token.kind == word, Token notWithin FileSize, Token notWithin Date, Token notWithin URL, Token notWithin Break}
+		)
 		(
 			{Token.kind == word}
 			|
@@ -46,6 +55,8 @@ Rule: named_email_in_list
 			{Token.kind == punctuation, Token.string != ":"}
 			|
 			{SpaceToken.kind != control}
+			|
+			{Token.string == "."}
 		)[0,15]
 		(
 			(
@@ -61,6 +72,8 @@ Rule: named_email_in_list
 				{Token.kind == punctuation, Token.string != ":"}
 				|
 				{SpaceToken.kind != control}
+				|
+				{Token.string == "."}
 			)[0,15]
 		)
 		({Token.string == "\""})?
@@ -73,6 +86,35 @@ Rule: named_email_in_list
 ):address
 -->
 :address.NamedEmail = {rule = "named_email_in_list", name = :name@string, email = :email@string}
+
+/*this is for an edge case that was breaking message headers*/
+Rule: named_email_start_of_line
+{SpaceToken.kind == control}
+(
+	(
+		({Token.kind == symbol})?
+		({Token.string == "\""})?
+		(
+			{Token.kind == word}
+			|
+			{Token.kind == number}
+			|
+			{Token.kind == punctuation, Token.string != ":"}
+			|
+			{SpaceToken.kind != control}
+			|
+			{Token.string == "."}
+		)[0,15]
+		({Token.string == "\""})?
+	):name
+	({SpaceToken.kind != control})*
+	({Token.string == "<"}
+	({Token.string != "@", Token.string != ">"})*
+	{Token.string == "@"}
+	({Token.string != ">"})* {Token.string == ">"}):email
+):address
+-->
+:address.NamedEmail = {rule = "named_email", name = :name@string, email = :email@string}
 
 
 Rule: not_actually_named_email
