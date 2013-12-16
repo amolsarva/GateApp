@@ -30,17 +30,18 @@ import java.util.TreeMap;
  *
  */
 public class AncTfidf implements Tfidf{
-	private Map<String, Double> term_frequency = null;
-	private CorpusImpl corpus = null;
-	private Map<String,Double> tfidf = null;
-	double unique_terms = 239208;
-	double words_counted = 22164985;
+	private Map<String, Double> term_frequency = null; // a Map to keep track of word frequencies in the OANC corpsu
+	private CorpusImpl corpus = null; // The corpus of documents from which text is extracted
+	private Map<String,Double> tfittf = null; // Given a document this keeps track of the TF-ITTF value of terms
+	double unique_terms = 239208; // The total number of unique terms in the corpus
+	double words_counted = 22164985; // Total number of words in the corpus
 	
 	/**
 	 * set a new corpus
 	 * @param corpus
 	 */
 	
+	// Initializes the corpus for the class
 	// shouldn't we pass in CorpusImpl? 
 	public void setCorpus(Corpus corpus){
 		this.corpus = (CorpusImpl) corpus;
@@ -50,18 +51,26 @@ public class AncTfidf implements Tfidf{
 	/**
 	 * get a list of allterms in all documents
 	 * @return a list of  all terms
+	 * The terms of the document are returned in no particular order
+	 * The document comes from the corpus
 	 */
 	public List<String> getTerms(){
+		// A check to make sure that the corpus has been set
 		if(corpus == null){
 			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
 			return null;
 		}
+		// A check to make sure that the OANC corpus has been loaded along with 
+		// word frequency
 		if(this.term_frequency == null){
 			corp_freq();
 		}
 		
+		
 		List<String> allterms = new ArrayList<String>();
 		
+		// Loops through each of the documents in the corpus and extracts all of the
+		// terms and adds these terms to the ArrayList allterms
 		for (int i = 0; i < corpus.size(); i++){
 			AnnotationSet annotations = corpus.get(i).getAnnotations().get("Term"); 
 			
@@ -74,6 +83,7 @@ public class AncTfidf implements Tfidf{
 		}
 		
 		return allterms;
+		// all of the terms in each document in the corpus is now returned
 	}
 
 	/**
@@ -82,11 +92,16 @@ public class AncTfidf implements Tfidf{
 	 * @return a list of all terms in a given document
 	 */
 	public List<String> getTerms(int doc_idx){
+		
+		// checks to see if a corpus has been given, if not the program will terminate
+		// with junk return value
 		if(corpus == null){
 			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
 			return null;
 		}
 		
+		// Checks to see if the OANC corpus has been loaded along with word frequency
+		// counts
 		if(this.term_frequency == null){
 			corp_freq();
 		}
@@ -98,12 +113,14 @@ public class AncTfidf implements Tfidf{
 		
 		Iterator<Annotation> index = annotations.iterator();
 		
+		// Loops through the document specified adding all of the terms to the 
+		// ArrayList all terms 
 		while(index.hasNext()){
 			Annotation first = index.next();
 			allterms.add((String) first.getFeatures().get("string"));
 		}
 		
-		return allterms;
+		return allterms; // this now returns all the terms within the document specified
 	}
 
 	/**
@@ -113,7 +130,8 @@ public class AncTfidf implements Tfidf{
 	 */
 	public List<String> getTermsOrdered(int doc_idx){
 		
-		
+		// First calculates the TF-ITTF values for all of the terms within
+		// doc _idx
 		try {
 			setTermsMap(doc_idx);
 		} catch (IOException e) {
@@ -123,18 +141,24 @@ public class AncTfidf implements Tfidf{
 		
 		Map<Double,String> tfidf_backwards = new TreeMap<Double,String>();
 		
-		for (Map.Entry entry : tfidf.entrySet()) { 
-			tfidf_backwards.put(tfidf.get(entry.getKey()), (String) entry.getKey());
+		// In order to sort the values based on the highest TF-ITTF values
+		// we reverse the key value order of a Map to extract the TF-ITTF values
+		// this relationship allows us to look up the orignal term after sorting
+		for (Map.Entry entry : tfittf.entrySet()) { 
+			tfidf_backwards.put(tfittf.get(entry.getKey()), (String) entry.getKey());
 		}
 		
 		ArrayList<Double> sorted_tfidf = new ArrayList<Double>(tfidf_backwards.keySet());
+		// The list is now sorted by TF-ITTF values
 		Collections.sort(sorted_tfidf);
 		
+		// Given a value now we want to add the term from which the value was derived from
 		ArrayList<String> terms_ordered = new ArrayList<String>();
 		for (int i = sorted_tfidf.size()-1; i >= 0; i--){
 			terms_ordered.add(tfidf_backwards.get(sorted_tfidf.get(i)));
 		}
 		
+		// This returns the terms in sorted order from lowest to highest
 		return terms_ordered;
 	}
 	
@@ -145,19 +169,24 @@ public class AncTfidf implements Tfidf{
 	 * @return the tfidf score of a given term in respect to a given document
 	 */
 	public double getScore(String term, int doc_idx){
+		// a check is set to see if the corpus is null, if no data was passed in this
+		// function doesn't have anything to process on
 		if(this.corpus == null){
 			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
 			return (Double) null;
 		}
+		
+		// checks to see if the OANC corpus was loaded along with term frequencies for
+		// each word within the corpus
 		if(this.term_frequency == null){
 			corp_freq();
 		}
 		
-
+		// Calculates the TF-ITTF value for each of each term within the document
 		try {
 			setTermsMap(doc_idx);
 		} catch (IOException e) {
-			System.out.println("TFIDF map never set");
+			System.out.println("TFITTF map never set");
 			e.printStackTrace();
 		}
 		/*
@@ -182,9 +211,12 @@ public class AncTfidf implements Tfidf{
 		
 		ArrayList<String> terms = (ArrayList<String>) getTerms(doc_idx);
 		
-		if(this.tfidf.containsKey(term)){
-			return this.tfidf.get(term);
+		// checks to see if the term is actually in the document specified, if it isn't
+		// then append the term and calculate at TF-ITTF Value, if it is just return the value
+		if(this.tfittf.containsKey(term)){
+			return this.tfittf.get(term);
 		}else{
+			
 			term_frequency.put(term,1.0);
 			words_counted++;
 			unique_terms++;
@@ -208,12 +240,15 @@ public class AncTfidf implements Tfidf{
 	 */
 	private void corp_freq (){
 		Map<String, Double> term_frequency = new HashMap<String, Double>();
+		// a temporary map to hold term frequencies inside of the OANC corpus
 		
 		BufferedReader br;
 		try {
+			// reads the OANC corpus
 			br = new BufferedReader(new FileReader("ANC-token-word.txt"));
 			
 			String line;
+			// adds each word and its term frequency to the temporary Map
 			while ((line = br.readLine()) != null) {
 			   String[] split = line.split("\\s+");
 			   split[0] = split[0].replaceAll("[\\s\\-()]", "");
@@ -235,7 +270,9 @@ public class AncTfidf implements Tfidf{
 		
 		
 	
-		
+		// Set the class term frequency variable to the temporary
+		// Map with term frequencies, now all of the term frequencies within
+		// the OANC corpus is recorded
 		this.term_frequency = term_frequency;	
 	}
 	
@@ -245,10 +282,15 @@ public class AncTfidf implements Tfidf{
 	 * in the tfidf data structure
 	 */
 	private void setTermsMap(int doc_idx) throws IOException{
+		// checks to see if a corpus has been given, if not the program will terminate
+		// with junk return value
 		if(corpus == null){
 			System.out.println("ERROR ERROR ERROR!!!! corpus not set");
 			return;
 		}
+		
+		// checks to see if the OANC corpus was loaded along with term frequencies for
+		// each word within the corpus
 		if(this.term_frequency == null){
 			corp_freq();
 		}
@@ -256,15 +298,17 @@ public class AncTfidf implements Tfidf{
 		 // total number of documents
 		Map<String, Double> term_frequency = new HashMap<String, Double>(); // number of times the term occurs in the document
 		
-
-
-
-
-
+		
+		// This is an array which holds all of the terms in the specified document
 		ArrayList<String> terms = (ArrayList<String>) getTerms(doc_idx);
-
+		
+		// This will loop through all of the terms within the document
+		// and record all the unique terms and their counts, it will also
+		// update the term frequency of the corpus by adding the values to the
+		// corpus
 		for (int i = 0; i<terms.size(); i++){
-
+			
+			// recording unique terms and their counts
 			if(term_frequency.containsKey(terms.get(i))){
 				double val = term_frequency.get(terms.get(i));
 				val++;
@@ -277,6 +321,7 @@ public class AncTfidf implements Tfidf{
 								
 			}
 			
+			// adding terms to the corpus
 			if(this.term_frequency.containsKey(terms.get(i))){
 				double val2 = term_frequency.get(terms.get(i));
 				val2++;
@@ -296,10 +341,13 @@ public class AncTfidf implements Tfidf{
 		}
 		
 		
-		
+		// loop through all of the terms and insert their TF-ITTF values
+		// into the TreeMap
 		Map<String,Double> tfidf_temp = new TreeMap<String,Double>();
 		for (Map.Entry entry : term_frequency.entrySet()) { 
 			String current_string = (String) entry.getKey();
+			
+			// This is the actual algorithm for calculating TF-ITTF
 			double tf = (term_frequency.get(current_string) / terms.size());
 			double idf = Math.log10(words_counted/this.term_frequency.get(current_string)) ;
 			double tf_ittf = tf*idf;
@@ -316,8 +364,11 @@ public class AncTfidf implements Tfidf{
 		//System.out.println(max_freq);
 
 		//System.out.println(doc_frequency.get("westside"));
-
-		tfidf = tfidf_temp;
+		
+		
+		// now all of the tf-ittf values for the terms within the document is stored
+		// within a variable of the class 
+		tfittf = tfidf_temp;
 	}
 
 	//@Override
@@ -479,6 +530,9 @@ public class AncTfidf implements Tfidf{
 	 * @param corpus
 	 * @return -
 	 */
+	
+	// Given a document and a corpus, this returns the index of the document within
+	// the corpus 
 	public int get_document_id(Document doc, Corpus corpus){
 		for (int i = 0; i<corpus.size();i++){
 			if(corpus.get(i).equals(doc))
