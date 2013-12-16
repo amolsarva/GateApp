@@ -387,7 +387,7 @@ public class AncTfidf implements Tfidf{
 	 * 
 	 * @param document
 	 * @param corpus
-	 * @return -
+	 * @return - getting the relations found in particular document
 	 */
 	public ArrayList<edge_relation> getRelations(Document document,
 			Corpus corpus) {
@@ -441,6 +441,8 @@ public class AncTfidf implements Tfidf{
 			Feature_string .add(Feature_set);
 			Term_score.add(Feature_set);
 		}
+		
+		// Header extraction for who email what to who
 		for(Annotation term : annotations)
 		{	for(int i = 0; i<idnum.length;i++)	
 			if(i!=idnum.length-1){
@@ -456,6 +458,8 @@ public class AncTfidf implements Tfidf{
 		}
 		for (int i = 0 ; i<Feature_string.size();i++){
 		
+		// Looping through all of the Features and determining TF-ITTF values/ significance
+
 		TreeMap<String,Double> Term_sub_score = new  TreeMap <String,Double>();	
 		for(int j = 0; j <Feature_string.get(i).size();j++){
 			Term_sub_score.put(Feature_string.get(i).get(j), getScore(Feature_string.get(i).get(j),doc_id));			
@@ -470,7 +474,7 @@ public class AncTfidf implements Tfidf{
 
 		
 
-		// EmailToR
+		// Extraction of EmailToR
 		ArrayList<Annotation> abc2 = new ArrayList<Annotation>();
 		for(Annotation term : annotations2){
 			abc2.add(term);			
@@ -490,7 +494,7 @@ public class AncTfidf implements Tfidf{
 			abc2.remove(needRemove);
 		}
 		
-		//EmailTo
+		//Extraction of EmailTo
 		int i = 0;
 		while(EmailTo.size()<EmailFrom.size()){
 			java.util.Iterator<Annotation> a = EmailToR.iterator();

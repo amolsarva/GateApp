@@ -65,7 +65,7 @@ public class PersonExtractor
 	/**
 	 * @param document
 	 * @param corpus
-	 * @return -
+	 * @return - An Arraylist of people's relations
 	 */
 	public ArrayList<edge_relation> getRelations(Document document,Corpus corpus){
 		ArrayList<edge_relation> relation_map = new ArrayList<edge_relation>();		
@@ -204,7 +204,7 @@ public class PersonExtractor
 	
 	/**
 	 * @param document
-	 * @return -
+	 * @return - get people 
 	 */
 	public ArrayList<Vertex_people> getpeoples(Document document){
 		ArrayList<Vertex_people> Vertex_peoples = new ArrayList<Vertex_people>();		
@@ -304,7 +304,7 @@ public class PersonExtractor
 	/**
 	 * @param doc
 	 * @param corpus
-	 * @return -
+	 * @return - get the doc_id base on document name
 	 */
 	public int get_document_id(Document doc, Corpus corpus){
 		for (int i = 0; i<corpus.size();i++){

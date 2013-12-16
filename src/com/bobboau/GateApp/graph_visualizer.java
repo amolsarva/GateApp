@@ -235,7 +235,9 @@ private Integer[] createVertices(int count) {
         	}
         	return v;
 }
-
+/*
+ * set group relations 
+ */
 
 private void set_group_people(ArrayList<Vertex_people> GP){
 	group_people = new ArrayList<Vertex_people>();
@@ -247,7 +249,9 @@ private void set_group_people(ArrayList<Vertex_people> GP){
 	}
 
 }
-
+/*
+ * set group people 
+ */
 private void set_group_relation(ArrayList<edge_relation> EP){
 	group_relation = new ArrayList<edge_relation>();
 	for(int i = 0; i<EP.size();i++){

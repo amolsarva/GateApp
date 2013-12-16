@@ -12,6 +12,7 @@ public class Vertex_people extends Object{
 
 	/**
 	 * @param input_name
+	 * constructor for people
 	 */
 	public Vertex_people (String input_name){
 		name = input_name;		
@@ -19,7 +20,7 @@ public class Vertex_people extends Object{
 	
 	/**
 	 * @param ano_people 
-	 * @return -
+	 * @return - find out whether two people are the same
 	 */
 	public boolean equals(Object ano_people){
 		if (((Vertex_people)ano_people).name.equals(this.name)){
@@ -45,7 +46,7 @@ public class Vertex_people extends Object{
 	}
 	/**
 	 * 
-	 * @return -
+	 * @return - features
 	 */
 	public ArrayList<String> get_feature(){
 		 ArrayList<String> out_feature = new ArrayList<String>();
@@ -60,7 +61,7 @@ public class Vertex_people extends Object{
 	
 	/**
 	 * 
-	 * @return -
+	 * @return - names
 	 */
 	public String get_name(){
 		return(name);

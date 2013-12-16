@@ -8,8 +8,17 @@ import java.util.*;
  *
  */
 public class edge_relation extends Object {
+	/*
+	* people send email
+	*/
 private String FirstP;
+/*
+ * people receive email
+ */
 private String SecondP;
+/*
+ * relations between sender and receiver
+ */
 private String [] Relations = {} ;
 
 /**
@@ -22,13 +31,13 @@ public edge_relation( String people1, String people2){
 
 };
 /**
- * @return -
+ * @return - first people name
  */
 public String get_First(){
 	return FirstP;
 }
 /**
- * @return -
+ * @return - second people name
  */
 public String get_Second(){
 	return SecondP;
@@ -48,7 +57,7 @@ public boolean equals(Object input){
 }
 
 /**
- * @param input_Relations
+ * @param input_Relations set features for relationships
  */
 public void set_Relations(ArrayList<String> input_Relations){
 	if (input_Relations.size()!= 0){
@@ -62,7 +71,7 @@ public void set_Relations(ArrayList<String> input_Relations){
 }
 
 /**
- * @return -
+ * @return - return relationships
  */
 public ArrayList<String> get_Relations(){
 	 ArrayList<String> out_Relations = new ArrayList<String>();
