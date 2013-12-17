@@ -107,6 +107,7 @@ public class GateApp implements GateAppType
 			this.base_pipeline = new AnniePipeline();
 			this.base_pipeline.addProgressListener(new ProgressListener(){
 				@Override public void processFinished() {
+					//required for interface, I don't actually need to do anything with it
 				}
 
 				@Override
@@ -130,8 +131,8 @@ public class GateApp implements GateAppType
 			
 			setTFIDF(this.config.get("tfidf_implementation", "Local"));
 			
-			this.term_blocks.setBlockSize(this.config.get("block_size", 5));
-			this.result_size = this.config.get("result_size", 5);
+			this.term_blocks.setBlockSize(this.config.get("block_size", 5).intValue());
+			this.result_size = this.config.get("result_size", 5).intValue();
 
 			//load up what ever corpus we had last time, default to nothing
 			setCorpus(new URL(this.config.get("loaded_files", "")));

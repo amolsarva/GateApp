@@ -129,7 +129,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	}
 
 	/**
-	 * 
+	 * called when the gate application fails to start
 	 */
 	@Override
 	public void onGateFailed(GateException e1)
@@ -425,7 +425,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	}
 
 	/**
-	 * 
+	 * what to do when we don't load a corpus
 	 */
 	@Override
 	public void onCorpusLoadFailed()
@@ -494,7 +494,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * have the user change the block size
 	 */
 	void onChangeBlockSize(){
-		String new_size = JOptionPane.showInputDialog(this, "Enter new block size", this.the_app.getBlockSize());
+		String new_size = JOptionPane.showInputDialog(this, "Enter new block size", new Integer(this.the_app.getBlockSize()));
 		try{
 			this.the_app.setBlockSize(Integer.parseInt(new_size));
 		}
@@ -507,7 +507,7 @@ public class GateFrame extends JFrame implements GateAppType.GateAppListener
 	 * have the user change the block size
 	 */
 	void onChangeResultSize(){
-		String new_size = JOptionPane.showInputDialog(this, "Enter new result size", this.the_app.getResultSize());
+		String new_size = JOptionPane.showInputDialog(this, "Enter new result size", new Integer(this.the_app.getResultSize()));
 		try{
 			this.the_app.setResultSize(Integer.parseInt(new_size));
 		}

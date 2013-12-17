@@ -16,6 +16,7 @@ import com.bobboau.GateApp.TermBlocks.Block;
  * @author Bobboau
  *
  */
+@SuppressWarnings("synthetic-access")
 public class BlockFormatter
 {
 
@@ -37,7 +38,7 @@ public class BlockFormatter
 	 * @param term_blocks the block generator, the source of the blocks to format
 	 * @return a list of strings extracted from the document that should be reasonable summarizations
 	 */
-	public List<Blob> getBlocks(int idx, int merge_threshold, TermBlocks term_blocks) {
+	public static List<Blob> getBlocks(int idx, int merge_threshold, TermBlocks term_blocks) {
 		
 		List<Block> doc_blocks = getScoreSortedBlocks(idx, term_blocks);
 		

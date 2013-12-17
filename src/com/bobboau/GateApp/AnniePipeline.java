@@ -16,7 +16,7 @@ import gate.event.ProgressListener;
 
 /**
  * @author bobboau
- *
+ *implementation of a gate pipeline derived from ANNIE
  */
 public class AnniePipeline implements Pipeline {
 	

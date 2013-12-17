@@ -18,12 +18,12 @@ import gate.util.InvalidOffsetException;
  * @author Bobboau
  * finds blocks of terms and generates a score for them, basically this is the list of all possible extractions
  */
+@SuppressWarnings("synthetic-access")
 public class TermBlocks {
 	
 	/**
 	 * represents a contiguous sequence of terms
 	 * @author Bobboau
-	 *
 	 */
 	public class Block{
 		
@@ -80,7 +80,6 @@ public class TermBlocks {
 		}
 		
 		/**
-		 * 
 		 * @return the score of this block
 		 */
 		public double getScore(){
@@ -88,7 +87,6 @@ public class TermBlocks {
 		}
 		
 		/**
-		 * 
 		 * @return the name of the person who wrote this block
 		 */
 		public String getAuthor(){
@@ -148,7 +146,7 @@ public class TermBlocks {
 	 * @param annotation_set
 	 * @return
 	 */
-	private ArrayList<Annotation> getOrderedAnnotations(AnnotationSet annotation_set){
+	private static ArrayList<Annotation> getOrderedAnnotations(AnnotationSet annotation_set){
 		ArrayList<Annotation> annotations = new ArrayList<Annotation>();
 		for(Annotation annotation : annotation_set){
 			annotations.add(annotation);
@@ -156,12 +154,15 @@ public class TermBlocks {
 		Collections.sort(annotations, new Comparator<Annotation>(){
 			@Override
 			public int compare(Annotation a, Annotation b) {
-				return (int) (a.getStartNode().getOffset() - b.getStartNode().getOffset());
+				return (int) (a.getStartNode().getOffset().longValue() - b.getStartNode().getOffset().longValue());
 			}
 		});
 		return annotations;
 	}
 	
+	/**
+	 * does the pre-processing of a corpus
+	 */
 	private void calculate(){
 		if(this.block_size < 1 || this.corpus == null){
 			return;
@@ -220,7 +221,7 @@ public class TermBlocks {
 	/**
 	 * tells if the working set is filled with enough stuff to count yet
 	 */
-	private boolean workingSetIsReady(Annotation[]ws){
+	private static boolean workingSetIsReady(Annotation[]ws){
 		return ws[0] != null;
 	}
 	
@@ -267,7 +268,7 @@ public class TermBlocks {
 	}
 
 	/**
-	 * @return get theset corpus
+	 * @return get the set corpus
 	 */
 	public Corpus getCorpus()
 	{

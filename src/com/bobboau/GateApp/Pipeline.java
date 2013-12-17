@@ -20,7 +20,7 @@ public interface Pipeline {
 	void execute(Corpus corpus) throws ExecutionException;
 	
 	/**
-	 * @param l
+	 * @param l thing to call when ever progress is made
 	 */
 	void addProgressListener(ProgressListener l);
 }

@@ -87,7 +87,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void addListener(final GateAppListener gate_listener)
@@ -109,7 +109,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void setCorpus(final URL document_directory)
@@ -131,7 +131,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void getDocumentContent(final int idx, final ResultRetriever<String> results)
@@ -153,7 +153,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 	
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void getDocumentPeople(final int idx, final ResultRetriever<List<Vertex_people>> results){
@@ -176,7 +176,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 	
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void getDocumentRelations(final int idx, final ResultRetriever<List<edge_relation>> results){
@@ -200,7 +200,7 @@ public class ThreadedGateApp implements GateAppType
 	
 
 	/**
-	 * 
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void getDocumentSubject(final int idx, final ResultRetriever<String> results)
@@ -222,7 +222,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 
 	/**
-	 * sets the block size eventually
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void setBlockSize(final int size) {
@@ -272,7 +272,7 @@ public class ThreadedGateApp implements GateAppType
 	}
 
 	/**
-	 * sets the number of results to be shown
+	 * passes the call to the GateApp via a blocking queue
 	 */
 	@Override
 	public void setResultSize(final int size)
