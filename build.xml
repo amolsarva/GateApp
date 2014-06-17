@@ -9,7 +9,7 @@
      {gate.home}/bin/ant
 
    or, on Windows
-     
+
      {gate.home}\bin\ant
 
    where {gate.home} is the directory in which GATE was installed.
@@ -38,10 +38,10 @@
     <isset property="env.GATE_HOME"/>
   </condition>
 
-  <!-- If gate.home is not set from build.properties or the 
+  <!-- If gate.home is not set from build.properties or the
        environment variable GATE_HOME, assume that this
        plugin is in GATE Developer's plugin directory -->
-  <property name="gate.home" location="../.." />
+  <property name="gate.home" location="." />
 
   <!-- location of GATE lib directory - should be inferred from gate.home -->
   <property name="gate.lib" location="${gate.home}/lib" />
@@ -81,9 +81,9 @@
     </fileset>
     <fileset dir="${lib.dir}" includes="**/*.jar" />
   </path>
-  
+
   <!--====================== Targets ============================-->
-  
+
   <!-- create build directory structure -->
   <target name="prepare">
     <mkdir dir="${classes.dir}" />
@@ -97,8 +97,8 @@
            debug="true"
            debuglevel="lines,source"
     	   encoding="UTF-8"
-           source="1.6"
-           target="1.6" />
+           source="1.7"
+           target="1.7" />
   </target>
 
   <!-- copy resources (anything non-.java) from src to classes -->
@@ -151,11 +151,11 @@
              classpathref="compile.classpath"
              encoding="UTF-8"
              windowtitle="${plugin.name} JavaDoc"
-             source="1.5">
+             source="1.7">
       <sourcepath>
         <pathelement location="${src.dir}" />
       </sourcepath>
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+      <link href="http://docs.oracle.com/javase/7/docs/api/" />
       <link href="../../../../doc/javadoc/" />
     </javadoc>
   </target>
