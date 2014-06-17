@@ -1,5 +1,7 @@
 classes/
 bin/
+doc/
 GateApp.conf
 .classpath
+GateApp.jar
 .DS_Store
